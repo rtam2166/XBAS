@@ -1316,13 +1316,6 @@ def Sleep_Mode(Input):
 #//////////////////////////////////////////////////////////////////////////////
 '''                              Main Program                               '''
 #//////////////////////////////////////////////////////////////////////////////
-# Turn on only the yellow LED
-Lights_Sound_Off()
-YellowLED.High()
-
-# Set flag for this mode
-ErrInit.put(1)
-
 # Check Files
 Output = FileCheck()
 
@@ -1341,7 +1334,8 @@ if type(Output)==str:
 # Pin Definition
 import pyb
 
-RedLED = pyb.Pin (pyb.Pin.cpu.B9, mode = pyb.Pin.OUT_PP, 
+# LED Pin Definition
+RedLED = pyb.Pin (pyb.Pin.cpu.C0, mode = pyb.Pin.OUT_PP, 
                       pull = pyb.Pin.PULL_DOWN)
 
 YellowLED = pyb.Pin (pyb.Pin.cpu.A3, mode = pyb.Pin.OUT_PP, 
@@ -1350,36 +1344,46 @@ YellowLED = pyb.Pin (pyb.Pin.cpu.A3, mode = pyb.Pin.OUT_PP,
 GreenLED = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP, 
                         pull = pyb.Pin.PULL_DOWN)
 
+# Piezzo Buzzer
+BuzzerPIN = pyb.Pin(pyb.Pin.cpu.C2, mode = pyb.Pin.OUT_PP, 
+                        pull = pyb.Pin.PULL_DOWN)
+timBuzzer = pyb.Timer()
+BuzzerChannel = timBuzzer.channel()
+def Buzzer(Input):
+    if Input == "On":
+        Turn On
+    else:
+        Turn off
 # The Piano Switch Board Pins numbered 0 to 4 from left to right, left most
 #   switch being Note0
-Note0 = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP,
+Note0 = pyb.Pin (pyb.Pin.cpu.A14, mode = pyb.Pin.OUT_PP,
                  pull = pyb.Pin.PULL_DOWN)
 
-Note1 = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP,
+Note1 = pyb.Pin (pyb.Pin.cpu.A15, mode = pyb.Pin.OUT_PP,
                  pull = pyb.Pin.PULL_DOWN)
 
-Note2 = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP,
+Note2 = pyb.Pin (pyb.Pin.cpu.C14, mode = pyb.Pin.OUT_PP,
                  pull = pyb.Pin.PULL_DOWN)
 
-Note3 = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP,
+Note3 = pyb.Pin (pyb.Pin.cpu.C15, mode = pyb.Pin.OUT_PP,
                  pull = pyb.Pin.PULL_DOWN)
 
-Note4 = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP,
+Note4 = pyb.Pin (pyb.Pin.cpu.H0, mode = pyb.Pin.OUT_PP,
                  pull = pyb.Pin.PULL_DOWN)
 
 # Creating the Go button function call. Go() should give 0 or 1 depending on 
 #   the pin input. Basically, equating Go_Pin.value() to Go() so I do less
 #   typing.
-Go_Pin = pyb.Pin(pyb.Pin.cpu.A5, mode = pyb.Pin.In)
+Go_Pin = pyb.Pin(pyb.Pin.cpu.C4, mode = pyb.Pin.In)
 Go = Go_Pin.value
 
 # The same as the Go pin, but greating a short function call for the emergency
 #   stop button.
-Stop_Pin = pyb.Pin(pyb.Pin.cpu.A5, mode = pyb.Pin.In)
+Stop_Pin = pyb.Pin(pyb.Pin.cpu.C5, mode = pyb.Pin.In)
 Emergency_Stop = Stop_Pin.value
 
 # Three Position Swtich Pin
-ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.A5, mode = pyb.Pin.ANALOG)
+ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 ThreeSwitch = ThreeSwitch_Pin.read
 
 import task_share
@@ -1418,6 +1422,10 @@ XBeam = task_share.Share ('i', thread_protect = False,
 
 # Zero the above buffers
 zero_flags()
+
+# Turn on only the yellow LED
+Lights_Sound_Off()
+YellowLED.High()
 
 # Set error flag for the initilization phase
 ErrInit.put(1)
