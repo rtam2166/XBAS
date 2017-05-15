@@ -806,15 +806,19 @@ def Calibration_Mode():
             # Gantry is in position, check the "block" variable for if the
             #   machine needs to wait for user input or not
             if block == 1:
+                Lights_Sound_Off()
+                GrennLED.High()
                 while True:
                     # Sit in a while loop until the user hits Go()
                     if Go()=1:
+                        Lights_Sound_Off()
+                        YellowLED.High()
                         break
             # XBAS now needs to take measurement
             Output = probe()
             
             # Check Output for error from probe()
-            if Output == :
+            if Output == "Error Occured":
                 # Error Occured, exit 2nd layer to 1st layer for error handling.
                 break
             
@@ -835,15 +839,19 @@ def Calibration_Mode():
             # Gantry is in position, check the "block" variable for if the
             #   machine needs to wait for user input or not
             if block == 1:
+                Lights_Sound_Off()
+                GrennLED.High()
                 while True:
                     # Sit in a while loop until the user hits Go()
                     if Go()=1:
+                        Lights_Sound_Off()
+                        YellowLED.High()
                         break
             # XBAS now needs to take measurement
             Output = probe()
             
             # Check Output for error from probe()
-            if Output == :
+            if Output == "Error Occured":
                 # Error Occured, exit 2nd layer to 1st layer for error handling.
                 break
                 
