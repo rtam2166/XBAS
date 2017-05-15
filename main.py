@@ -701,7 +701,19 @@ def Calibration_Mode():
     Function Outputs:
         None
     '''
+    # Variable switch is used to identify if this is the first time running
+    #   through this program or not.
     switch = 0
+    
+    # Variable block is a hardcoded user input that determines the behavior
+    #   of the program
+    #   Value of 1 indicates that the user is using a short block that they
+    #       manually have to move for calibration, thus the machine waits
+    #       after moving the gantry for the user to hit go.
+    #   Value of 2 indicates the user is using a long block for calibration
+    #       that they don't have to move, so the machine will not wait for
+    #       user input and just go.
+    block = 1
 
     # 1st layer
     while True:            
@@ -781,9 +793,8 @@ def Calibration_Mode():
             NearSide = Output(0)
             FarSide = Output(1)
             
-            # Move Gantry to the near side and take a measurement. Should
-            #   handle all errors in the function.
-            Output = Move_Gantry_To(NearSide, probe = True)
+            # Move Gantry to the near side
+            Output = Move_Gantry_To(NearSide, probe = False)
             
             # Check output for if an error occured. If no error occured, the
             #   function should have returned a number indicating the
@@ -791,12 +802,31 @@ def Calibration_Mode():
             if Output == "Error Occured":
                 # An error did occur, break back to 1st layer
                 break
+                
+            # Gantry is in position, check the "block" variable for if the
+            #   machine needs to wait for user input or not
+            if block == 1:
+                Lights_Sound_Off()
+                GrennLED.High()
+                while True:
+                    # Sit in a while loop until the user hits Go()
+                    if Go()=1:
+                        Lights_Sound_Off()
+                        YellowLED.High()
+                        break
+            # XBAS now needs to take measurement
+            Output = probe()
+            
+            # Check Output for error from probe()
+            if Output == "Error Occured":
+                # Error Occured, exit 2nd layer to 1st layer for error handling.
+                break
             
             # Store the data of the near side to the calibration data
             CalibrationData[2] = Output
             
             # Calue of NearSide has been stored, now for FarSide
-            Output = Move_Gantry_To(FarSide, probe = True)
+            Output = Move_Gantry_To(FarSide, probe = False)
             
             # Check output for if an error occured. If no error occured, the
             #   function should have returned a number indicating the
@@ -806,6 +836,25 @@ def Calibration_Mode():
                 ErrorHandler()
                 break
             
+            # Gantry is in position, check the "block" variable for if the
+            #   machine needs to wait for user input or not
+            if block == 1:
+                Lights_Sound_Off()
+                GrennLED.High()
+                while True:
+                    # Sit in a while loop until the user hits Go()
+                    if Go()=1:
+                        Lights_Sound_Off()
+                        YellowLED.High()
+                        break
+            # XBAS now needs to take measurement
+            Output = probe()
+            
+            # Check Output for error from probe()
+            if Output == "Error Occured":
+                # Error Occured, exit 2nd layer to 1st layer for error handling.
+                break
+                
             # Store the data of the far side to the calibration data
             CalibrationData[3] = Output
             
