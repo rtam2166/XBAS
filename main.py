@@ -1063,7 +1063,7 @@ def Leveling_Mode():
     ErrorHandler()
     # End of the First Layrr
     
-def Assemble():
+def Assembly_Mode():
     '''Function that runs after the beam is leveled to force rails into 
     position and torque them down.
     Function Inputs:
@@ -1072,7 +1072,7 @@ def Assemble():
         None
     '''
     # Set Error Flag for mode
-    ErrAssemble.put(1)
+    ErrAssembly.put(1)
     
     # Beginning of the while loop for importing the data stored in 
     #   BoltPatternXXX.csv
@@ -1081,7 +1081,7 @@ def Assemble():
         if type(Output) == str:
             # Error Occured
             ErrorHandler()
-            ErrAssemble.put(1)
+            ErrAssembly.put(1)
         else:
             # No Error Occured
             break
@@ -1106,7 +1106,7 @@ def Assemble():
             if Output == "Error Occured":
                 # Error Occured
                 ErrorHandler()
-                ErrAssemble.put(1)
+                ErrAssembly.put(1)
             else:
                 # No Error Occured
                 break
@@ -1125,7 +1125,7 @@ def Assemble():
         if Error Occured:
             # Error Occured
             ErrorHandler()
-            ErrAssemmble.put(1)
+            ErrAssembly.put(1)
         else:
             # No Error Occured
             break
