@@ -86,7 +86,6 @@ def FileCheck():
     
     # List of strings of file names to check for in the system directory
     FileList = ["task_share.py",
-                "setup.py",
                 "main.py",
                 "boot.py",
                 "ImportSong.py"]
