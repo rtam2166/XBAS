@@ -1168,25 +1168,45 @@ def TorqueDown(Input):
         
         # 2nd Layer While Loop
         while True:
+            # Define Variables for this section of code
+            floor =         # variable indicating the farthest down the rail
+                            #   actuator is allowed to go down
+            ceiling =       # variable indicating the how low the rail
+                            #   actuators must go for stall to be considered
+                            #   valid.
+            error = 0       # variable indicating if an error has occured
+                            #   during the next part
+                
             # Checking the Input so you know which rail actuator to check for
             #   stall. If stall, set that side's flag to 1 indicating that side
             #   is done.
             if Input == "L" or Input == "B":
                 # If left actiator is active
                 if Left Stall Flag True:
-                    # and if left actuator is stalled, set LeftFlag True
-                    LeftFlag == 1
+                    # and if left actuator is stalled, check if it stalled at
+                    #   a valid place
+                    position = Read Left Actuator
+                    if position > ceiling:
+                        # If the system stalled too early, set the error flags
+                        ErrRailActL.put(1)
+                        error = 1
+                    else:
+                        # All is good, set flag complete
+                        LeftFlag == 1
+                        
             if Input == "R" or Input == "B":
                 # If right actuator is active
                 if Right Stall Flag True:
-                    # and if right actuator is stalled, set RightFlag True
-                    RightFlag == 1
-            
-            # Define Variables for next part
-            floor =         # variable indicating the farthest down the rail
-                            #   actuator is allowed to go down
-            error = 0       # variable indicating if an error has occured
-                            #   during the next part
+                    # and if right actuator is stalled, check if it stalled at
+                    #   a valid place
+                    position = Read Left Actuator
+                    if position > ceiling:
+                        # If the system stalled too early, set the error flags
+                        ErrRailActL.put(1)
+                        error = 1
+                    else:
+                        # All is good, set flag complete
+                        RightFlag == 1
             
             # Check Position of rail actuators to ensure the system does not
             #   crash
