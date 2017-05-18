@@ -984,6 +984,16 @@ def Leveling_Mode():
             FarSide = CalibrationData(1)
             CalConst = CalibrationData(4)
 
+            # Import BoltPatternXXX.csv file for the X-Beam just to check
+            #   that it is both present and valid.
+            Output = ImportBoltPattern()
+            
+            # Check the output for an error
+            if type(Output) == str:
+                # If error, break out of 2nd layer into 1st layer for
+                #   error handling
+                break
+                
             # Move the Gantry to the far side and take the first measurement
             Output = Move_Gantry_To(Farside, probe = True)
             
