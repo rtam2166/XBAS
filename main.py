@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##
-#  @file setup.py
+#  @file main.py
 #  @author Robert Tam
-#  @copyright GPL Version 3.0
+#  This program was written for an ME Senior Project.
 
 def zero_flags():
     '''Function sets all error flag buffers to false aka 0 or its equivalent.
@@ -1463,6 +1463,13 @@ Emergency_Stop = Stop_Pin.value
 # Three Position Swtich Pin
 ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 ThreeSwitch = ThreeSwitch_Pin.read
+
+# Pin Definition for Stepper Drives
+
+
+# Stepper Driver object creations
+import l6470nucleo
+Need Call Outs
 
 import task_share
 # Variable Buffer Creation
