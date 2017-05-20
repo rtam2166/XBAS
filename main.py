@@ -564,7 +564,7 @@ def Move_Gantry_To(Destination, probe = False):
     Destination = ((Destination + xOffset)/DistancePerRev)*StepsPerRev
     
     # Move to the new value of Destination
-    Send Data to stepper driver
+    Board1.GoTo(1,Destination)
     
     # Wait for stall or finish flag
     while True:
