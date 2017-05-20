@@ -1153,28 +1153,66 @@ def TorqueDown(Input):
     Function outputs:
         None'''
     # 1st Layer while loop
-    while True:
+    while True:       
+        # Rail Actuators constants
+        StepPerRev = XXX
+        RevPerDistance = XXX
+        
+        # Position above rails in mm away from the motor. Does not have to be 
+        #   very accurate (+/- 1mm)
+        PositionAboveRails = XXX # mm is the distance we determined too small for 
+                                # human fingers
+        # Covert PositionAboveRails from distance in mm to steps for the drivers
+        PositionAboveRails = PositionAboveRails * RevPerDistance * StepsPerRev
+        
+        # Set torque for the approach to the rails at a very low stall torque
+        Board2._setStallThreshold() ISSUE
+        
         # Set Flags and turn on actuators depending on the input. DON'T PANIC,
         #   the reason why the flags are opposite of what common sense dictates
         #   is that the flag indicates the status if the RAIL is finished
         #   being pushed down. It does not indicate the side being pressed.
         if Input == "L":
             # If only Left Actuator should be on
-            Turn Left Actuator On
+            Board2.Goto(1,PositionAboveRails)
             LeftFlag = 0
             RightFlag = 1
         elif Input == "R":
             # If only Right Actuator should be on
-            Turn Right Actuator On
+            Board2.Goto(2,PositionAboveRails)
             LeftFlag = 1
             RightFlag = 0
         elif Input == "B":
             # If both actuators should be on
             Turn Left Actuator On
-            Turn Right Actuator On
+            Board2.Goto(1,PositionAboveRails)
+            Board2.Goto(2,PositionAboveRails)
             LeftFlag = 0
             RightFlag = 0
         
+        # while loop that checks for if either rail actuator has reached
+        #   the position above the rails or stalled out.
+        error = 0   # Error flag for below while loop
+        while True:
+            # Check for stall. If stall, set an error flag to handle error.
+            #   Machine must stop upon stall, back off, call error handler,
+            #   and resume program where it left off upon solving the error.
+            if Board2.isStalled(1) == True:
+                ErrRailActL.put(1)
+                error = 1
+            if Board2.isStalled(2) == True:
+                ErrRailActR.put(1)
+                error = 1
+            
+            # Check for completion
+            check busy flag???
+            If complete, break out of this loop
+            
+            # If error occured
+            if error == 1:
+                ErrorHandler()
+                ErrAssembly.put(1)
+                
         # 2nd Layer While Loop
         while True:
             # Define Variables for this section of code
@@ -1227,6 +1265,7 @@ def TorqueDown(Input):
                     # If position indicates issue, set error flags.
                     ErrRailActL.put(1)
                     error = 1
+                    
             if Input == "R" or Input == "B":
                 # If right actiator is active, read position and check against
                 #   floor
