@@ -88,7 +88,8 @@ def FileCheck():
     FileList = ["task_share.py",
                 "main.py",
                 "boot.py",
-                "ImportSong.py"]
+                "ImportSong.py",
+                "l6470nucleo.py"]
                 
     # Retrieve the system directory information as a list of strings
     files = os.listdir()
@@ -1464,12 +1465,15 @@ Emergency_Stop = Stop_Pin.value
 ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 ThreeSwitch = ThreeSwitch_Pin.read
 
-# Pin Definition for Stepper Drives
-
-
-# Stepper Driver object creations
-import l6470nucleo
-Need Call Outs
+# Stepper Driver pin and  object creations
+import l6470nucleo                  # Import file
+SCK= pyb.Pin(pyb.Pin.cpu.A5)        # stby_rst_pin 
+ncs1= pyb.Pin(pyb.Pin.cpu.A10)      # cs_pin for board 1
+ncs2= pyb.Pin(pyb.Pin.cpu.A4)       # cs_pin for board 2
+Board1 = l6470nucleo.Dual6470(1,ncs1,SCK) # Controls the Gantry (1) and
+                                          # Beam Actuator (2)
+Board2 = l6470nucleo.Dual6470(2,ncs2,SCK) # Controls Left (1) and Right
+                                          # (2) rail actuators
 
 import task_share
 # Variable Buffer Creation
