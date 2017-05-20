@@ -64,7 +64,6 @@ def Mode():
            return(3)
            
     else:
-        
         return(0)
     
     
