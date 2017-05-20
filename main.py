@@ -22,7 +22,6 @@ def zero_flags():
     ErrFileCheck.put(0)
     ErrSong.put(0)
     XBeam.put(0)
-    Side.put(2)
 
 def Mode():
     '''Function which is used to read and return the selection of the three
