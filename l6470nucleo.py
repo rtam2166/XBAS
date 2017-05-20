@@ -543,9 +543,14 @@ command can be given only when the previous motion command has been completed
     '''-------------------------------------------------------'''
     
     def GetStatus (self, motor, verbose=0):
-        '''need comment'''
+        '''This function reads and prints the status register of the motor requested
+        @param motor is value 1 or 2 depending on the motor the user wants to access
+        @param verbose is a named variable defaulting to 0. If verbose is 0, it 
+            clears the status register. If verbose = 1, it prints the status.
+        @return status value which is an unsigned 8 bit number'''
+        
         status = self._get_params(self.COMMAND_DICT['GetStatus'], 2)
-        if verbose:
+        if verbose == 1:
             self.Print_Status(motor, status)
         return status
     '''-------------------------------------------------------'''
