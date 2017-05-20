@@ -216,6 +216,8 @@ class Dual6470:
         self.SoftHiZ(2)
         
     def _setStallThreshold(self, value):
+        '''This function sets the stall threshold of the board. 
+        Needs More Writing'''
         self._set_par_1b('STALL_TH', value)  
     
     def _set_MicroSteps(self, SYNC_Enable, SYNC_Select, num_STEP):
