@@ -1243,10 +1243,10 @@ def TorqueDown(Input):
                 # Truning On solenoids based on side being done
                 if Input == "L":
                     # Left Side
-                    Turn Left Solenoid On
+                    SolenoidLeft.High()
                 if Input == "R":
                     # Right Side
-                    Trun Right Solenoid On
+                    SolenoidRight.High()
         
                 # Import Time so system can wait for stuff to finish
                 import utime
@@ -1257,19 +1257,19 @@ def TorqueDown(Input):
                 # Turn On motors depedning on side being done
                 if Input == "L":
                     # Left Side
-                    Turn Left Motor On
+                    DCMotorLeft.High()
                 if Input == "R":
                     # Right Side
-                    Trun Right Motor On
+                    DCMotorRight.High()
 
                 # Sleep for X amount of time
                 utime.sleep()
                 
                 # Turn screwdriver motors and solenoids off
-                Turn Right Motor Off
-                Turn Left Motor Off
-                Turn RIght Solenoid Off
-                Turn Left Solenoid Off
+                DCMotorLeft.low()
+                DCMotorRIght.low()
+                SolenoidLeft.low()
+                SolenoidRight.low()
     
                 # Sleep till solenoids retract
                 utime.sleep(100)
@@ -1424,6 +1424,13 @@ def Buzzer(Input):
         Turn On
     else:
         Turn off
+        
+# Solenoid and DC Motor Pin call outs
+SolenoidLeft = pyb.Pin (pyb.Pin.cpu.B0, mode = pyb.Pin.OUT_PP)
+SolenoidRight = pyb.Pin (pyb.Pin.cpu.B7, mode = pyb.Pin.OUT_PP)
+DCMotorLeft = pyb.Pin (pyb.Pin.cpu.A4, mode = pyb.Pin.OUT_PP)
+DCMotorLeft = pyb.Pin (pyb.Pin.cpu.B6, mode = pyb.Pin.OUT_PP)
+
 # The Piano Switch Board Pins numbered 0 to 4 from left to right, left most
 #   switch being Note0
 Note0 = pyb.Pin (pyb.Pin.cpu.A14, mode = pyb.Pin.OUT_PP,
