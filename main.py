@@ -194,7 +194,7 @@ def ImportBoltPattern():
     to the Error Report text file.'''
     i = 1
     for item in BoltSide:
-        if item != "R" and item != "L" and item != "B":
+        if item != "R" and item != "L":
             ErrBoltCsv.put(1)
             string = "Error in "+FileName+", row 1 item "+str(i)+": '"+\
                         str(item)+"' is not a valid input"
@@ -1148,197 +1148,151 @@ def Assembly_Mode():
 def TorqueDown(Input):
     '''Function Torques down the side indicated by the input
     Function inputs:
-        Input is a character "L", "R", or "B" indicating that either the
-        left, right, or both sides needs to be torqued down.
+        Input is a character "L" or "R", indicating that either the
+        left or right side needs to be torqued down.
     Function outputs:
         None'''
+    
+    # Rail Actuators constants
+    StepPerRev = XXX
+    RevPerDistance = XXX
+    
+    # Position above rails in mm away from the motor. Does not have
+    #   to be very accurate (+/- 1mm)
+    PositionAboveRails = XXX # mm is the distance we determined too
+                            # small for human fingers
+    # Covert PositionAboveRails from distance in mm to steps for the 
+    #   drivers
+    PositionAboveRails = PositionAboveRails * RevPerDistance * StepsPerRev
+    
+    # Calculating position above granite from the motor just as with
+    #   PositionAboveRails
+    PositionAboveGranite = PositionAboveGranite * RevPerDistance * StepsPerRev
+    
     # 1st Layer while loop
-    while True:       
-        # Rail Actuators constants
-        StepPerRev = XXX
-        RevPerDistance = XXX
-        
-        # Position above rails in mm away from the motor. Does not have to be 
-        #   very accurate (+/- 1mm)
-        PositionAboveRails = XXX # mm is the distance we determined too small for 
-                                # human fingers
-        # Covert PositionAboveRails from distance in mm to steps for the drivers
-        PositionAboveRails = PositionAboveRails * RevPerDistance * StepsPerRev
-        
+    while True:        
         # Set torque for the approach to the rails at a very low stall torque
         Board2._setStallThreshold() ISSUE
         
-        # Set Flags and turn on actuators depending on the input. DON'T PANIC,
-        #   the reason why the flags are opposite of what common sense dictates
-        #   is that the flag indicates the status if the RAIL is finished
-        #   being pushed down. It does not indicate the side being pressed.
+        # Turn on actuators and move twoards a position just above the rails
         if Input == "L":
-            # If only Left Actuator should be on
+            # Turn on left actuator
             Board2.Goto(1,PositionAboveRails)
-            LeftFlag = 0
-            RightFlag = 1
+            
         elif Input == "R":
-            # If only Right Actuator should be on
+            # Turn on right actuator
             Board2.Goto(2,PositionAboveRails)
-            LeftFlag = 1
-            RightFlag = 0
-        elif Input == "B":
-            # If both actuators should be on
-            Turn Left Actuator On
-            Board2.Goto(1,PositionAboveRails)
-            Board2.Goto(2,PositionAboveRails)
-            LeftFlag = 0
-            RightFlag = 0
         
-        # while loop that checks for if either rail actuator has reached
-        #   the position above the rails or stalled out.
-        error = 0   # Error flag for below while loop
+        # 2nd Layer while Loop
+        error = 0
         while True:
-            # Check for stall. If stall, set an error flag to handle error.
-            #   Machine must stop upon stall, back off, call error handler,
-            #   and resume program where it left off upon solving the error.
-            if Board2.isStalled(1) == True:
+            # Check for if the rail actuator has stalled or if the rail
+            #   actuator has reached destination. 
+            
+            if Board2.isStalled(1) == True and Input == "L":
+                # Left actuator stalled, call error and break out of while
+                #   loop for handling it
                 ErrRailActL.put(1)
                 error = 1
-            if Board2.isStalled(2) == True:
+                break
+                
+            elif Board2.isStalled(2) == True and Iput == "R":
+                # Right actuator stalled, call error and break out of while
+                #   loop for handling it
                 ErrRailActR.put(1)
                 error = 1
+                break
             
-            # Check for completion
-            check busy flag???
-            If complete, break out of this loop
+            elif ISSUE:
+                # Check for completion, exit with no error called
+                error = 0
+                break
+        # End of the 2nd Layer while loop, back in the 1st layer
+        
+    # Error Check, If an error was declared earlier, then skip
+    #   the following code responsible for fully pressing down the
+    #   rails and bolting down the screws
+    if error == 0:
+        # Set torque high
+        Board2._setStallThreshold() ISSUE
+        
+        # Set actuators on depending on input
+        if Input == "L":
+            # Turns left actuator on
+            Board2.Goto(1,PositionAboveGranite)
             
-            # If error occured
-            if error == 1:
-                ErrorHandler()
-                ErrAssembly.put(1)
-                
-        # 2nd Layer While Loop
-        while True:
-            # Define Variables for this section of code
-            floor =         # variable indicating the farthest down the rail
-                            #   actuator is allowed to go down
-            ceiling =       # variable indicating the how low the rail
-                            #   actuators must go for stall to be considered
-                            #   valid.
-            error = 0       # variable indicating if an error has occured
-                            #   during the next part
-                
-            # Checking the Input so you know which rail actuator to check for
-            #   stall. If stall, set that side's flag to 1 indicating that side
-            #   is done.
-            if Input == "L" or Input == "B":
-                # If left actiator is active
-                if Left Stall Flag True:
-                    # and if left actuator is stalled, check if it stalled at
-                    #   a valid place
-                    position = Read Left Actuator
-                    if position > ceiling:
-                        # If the system stalled too early, set the error flags
-                        ErrRailActL.put(1)
-                        error = 1
-                    else:
-                        # All is good, set flag complete
-                        LeftFlag == 1
-                        
-            if Input == "R" or Input == "B":
-                # If right actuator is active
-                if Right Stall Flag True:
-                    # and if right actuator is stalled, check if it stalled at
-                    #   a valid place
-                    position = Read Left Actuator
-                    if position > ceiling:
-                        # If the system stalled too early, set the error flags
-                        ErrRailActL.put(1)
-                        error = 1
-                    else:
-                        # All is good, set flag complete
-                        RightFlag == 1
+        elif Input == "R":
+            # Turns right actuator on
+            Board2.Goto(2,PositionAboveGranite)
             
-            # Check Position of rail actuators to ensure the system does not
-            #   crash
-            if Input == "L" or Input == "B":
-                # If left actiator is active, read position and check against
-                #   floor
-                position = Read Left Actuator
-                if position < floor:
-                    # If position indicates issue, set error flags.
+        # 2nd layer while loop checking destination and stall
+        #   flags as before.
+        while True:  
+            if ISSUE:
+                # Check for completion, call error if actuator moved
+                #   to destination succesfully
+                if Input == "L":
                     ErrRailActL.put(1)
-                    error = 1
-                    
-            if Input == "R" or Input == "B":
-                # If right actiator is active, read position and check against
-                #   floor
-                position = read Right Actuator
-                if position < floor:
-                    # If position indicates issue, set error flags.
+                if Input == "R":
                     ErrRailActR.put(1)
-                    error = 1
-            
-            # Check for error
-            if error = 1:
-                Home Right Actuator
-                Home Left Actuator
-                ErrorHandler()
-                ErrAssemble.put(1)
                 break
-            
-            # Check for completion
-            if RightFlag == 1 and LeftFlag == 1:
-                break
-            
-            # End of the 2nd Layer, start at the beginning of the 2nd layer.
-            
-        # Check for completion
-        if RightFlag == 1 and LeftFlag == 1:
-            break
-        # End of the 1st Layer, go back to the beginning of the 1st layer
+            if Board2.isStalled(1) == True or Board2.isStalled(2) == True:
+                # Left or right actuator stalled, move on to next
+                #   stage (torque down)
+                
+                # Truning On solenoids based on side being done
+                if Input == "L":
+                    # Left Side
+                    Turn Left Solenoid On
+                if Input == "R":
+                    # Right Side
+                    Trun Right Solenoid On
         
-    '''Double layered while loop complete, move on.'''
+                # Import Time so system can wait for stuff to finish
+                import utime
+
+                # Wait for solenoids to extend
+                utime.sleep(100)
+
+                # Turn On motors depedning on side being done
+                if Input == "L":
+                    # Left Side
+                    Turn Left Motor On
+                if Input == "R":
+                    # Right Side
+                    Trun Right Motor On
+
+                # Sleep for X amount of time
+                utime.sleep()
+                
+                # Turn screwdriver motors and solenoids off
+                Turn Right Motor Off
+                Turn Left Motor Off
+                Turn RIght Solenoid Off
+                Turn Left Solenoid Off
     
-    # Truning On solenoids based on side being done
-    if Input == "L" or Input == "B":
-        # Left Side
-        Turn Left Solenoid On
-    if Input == "R" or Input == "B::
-        # Right Side
-        Trun Right Solenoid On
+                # Sleep till solenoids retract
+                utime.sleep(100)
+    
+                # home the rail actoators depedning on side being done
+                if Input == "L" or Input == "B":
+                    # Left Side
+                    Home Left Actuator
+                if Input == "R" or Input == "B::
+                    # Right Side
+                    Home Right Actuator
+    
+                # Program done, return
+                return()
         
-    # Import Time so system can wait for stuff to finish
-    import utime
-    
-    # Wait for solenoids to extend
-    utime.sleep(100)
-    
-    # Turn On motors depedning on side being done
-    if Input == "L" or Input == "B":
-        # Left Side
-        Turn Left Motor On
-    if Input == "R" or Input == "B::
-        # Right Side
-        Trun Right Motor On
+        # end 2nd layer, back in 1st layer
+        # Home the rail actuators
+        ISSUE
         
-    # Sleep for X amount of time
-    utime.sleep()
-    
-    Turn Right Motor Off
-    Turn Left Motor Off
-    Turn RIght Solenoid Off
-    Turn Left Solenoid Off
-    
-    # Sleep till solenoids retract
-    utime.sleep(100)
-    
-    # home the rail actoators depedning on side being done
-    if Input == "L" or Input == "B":
-        # Left Side
-        Home Left Actuator
-    if Input == "R" or Input == "B::
-        # Right Side
-        Home Right Actuator
-    
-    # Program done, return
-    return()
+        # Error Handling and set mode error back
+        ErrorHandler()
+        ErrAssembly.put(1)
+        # End of 1st layer, resume at beginning
     
 def Sleep_Mode(Input):
     '''This is the sleeping mode for the machine. It homes the machine and goes
