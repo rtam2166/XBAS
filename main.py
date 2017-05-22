@@ -1408,22 +1408,22 @@ import pyb
 RedLED = pyb.Pin (pyb.Pin.cpu.C0, mode = pyb.Pin.OUT_PP, 
                       pull = pyb.Pin.PULL_DOWN)
 
-YellowLED = pyb.Pin (pyb.Pin.cpu.A3, mode = pyb.Pin.OUT_PP, 
+YellowLED = pyb.Pin (pyb.Pin.cpu.C2, mode = pyb.Pin.OUT_PP, 
                          pull = pyb.Pin.PULL_DOWN)
 
 GreenLED = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP, 
                         pull = pyb.Pin.PULL_DOWN)
 
 # Piezzo Buzzer
-BuzzerPIN = pyb.Pin(pyb.Pin.cpu.C2, mode = pyb.Pin.OUT_PP, 
+BuzzerPIN = pyb.Pin(pyb.Pin.cpu.A3, mode = pyb.Pin.OUT_PP, 
                         pull = pyb.Pin.PULL_DOWN)
-timBuzzer = pyb.Timer()
-BuzzerChannel = timBuzzer.channel()
+timBuzzer = pyb.Timer(2,freq = 1500)
+BuzzerChannel = timBuzzer.channel(4, pyb.Timer.PWM, pin = BuzzerPin)
 def Buzzer(Input):
     if Input == "On":
-        Turn On
+        BuzzerChannel.pulse_width_percent(100)
     else:
-        Turn off
+        BuzzerChannel.pulse_width_percent(0)
         
 # Solenoid and DC Motor Pin call outs
 SolenoidLeft = pyb.Pin (pyb.Pin.cpu.B0, mode = pyb.Pin.OUT_PP)
