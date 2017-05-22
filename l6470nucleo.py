@@ -10,11 +10,10 @@
 #  @c http://www.st.com/resource/en/application_note/dm00061093.pdf. 
 #
 #  @author John Ridgely, John Barry, Anthony Lombardi, 
-#           Whittaker Hamill, and Sam Artho-Bentz
+#           Whittaker Hamill, Sam Artho-Bentz, and Robert Tam
 
 import pyb
 import time
-#import BitUtilities
 from math import ceil as math_ceil
 
 
@@ -52,19 +51,18 @@ SYNC_SEL = const(0x10)
 # pg 47 of L6470 Programming Manual for details
 STALL_TH = const(10)
 
-
-## This class implements a driver for the dual L6470 stepping motor driver 
-#  chips on a Nucleo IHM02A1 board. The two driver chips are connected in 
-#  SPI daisy-chain mode, which makes communication a bit convoluted. 
-#
-#  NOTE: One solder bridge needs to be moved for the IHM02A1 to work 
-#  with unmodified MicroPython. Bridge SB34 must be disconnected, and
-#  bridge SB12 must be connected instead. This is because the SCK signal
-#  for which the board is shipped is not the one which MicroPython uses
-#  by default.
-
 class Dual6470:
-
+    ## This class implements a driver for the dual L6470 stepping motor driver 
+    #  chips on a Nucleo IHM02A1 board. The two driver chips are connected in 
+    #  SPI daisy-chain mode, which makes communication a bit convoluted. 
+    #
+    #  NOTE: One solder bridge needs to be moved for the IHM02A1 to work 
+    #  with unmodified MicroPython. Bridge SB34 must be disconnected, and
+    #  bridge SB12 must be connected instead. This is because the SCK signal
+    #  for which the board is shipped is not the one which MicroPython uses
+    #  by default.
+    
+    def __init__ (self, spi_object, cs_pin, stby_rst_pin):
     ## Initialize the Dual L6470 driver. The modes of the @c CS and
     #  @c STBY/RST pins are set and the SPI port is set up correctly. 
     #  @param spi_object A SPI object already initialized. used to talk to the 
@@ -74,12 +72,6 @@ class Dual6470:
     #  @param stby_rst_pin The pin which is connected to the driver 
     #      chips' STBY/RST inputs, in a pyb.Pin object
     
-     
-    
-    
-
-    def __init__ (self, spi_object, cs_pin, stby_rst_pin):
-
         ## The CPU pin connected to the Chip Select (AKA 'Slave Select') pin
         #    of both the L6470 drivers. 
         self.cs_pin = cs_pin
@@ -220,19 +212,20 @@ class Dual6470:
         
 
     def _setStallThreshold(self, value):
-        self._set_par_1b('STALL_TH', value)
-        
-    ## Set the number of Microsteps to use, the SYNC output frequency, and the
-    # SYNC ENABLE bit.
-    # @param SYNC_Enable A 1-bit integer which determines the behavior of the 
-    # BUSY/SYNC output.
-    # @param SYNC_Select A 3-bit integer which determines SYNC output frequency
-    # @param num_STEP the integer number of microsteps, numbers which are 
-    # powers of 2 up to 128 are acceptable.
-    
+        ## Sets the threshold back emf value for the board to stall at.
+        # @param value is an integer input from 1 to 16 which corresponds to a
+        #               current of x*31.25mA where x is the input from 1 to 16
+        self._set_par_1b('STALL_TH', value)    
     
     def _set_MicroSteps(self, SYNC_Enable, SYNC_Select, num_STEP):
-                
+        ## Set the number of Microsteps to use, the SYNC output frequency, and the
+        # SYNC ENABLE bit.
+        # @param SYNC_Enable A 1-bit integer which determines the behavior of the 
+        # BUSY/SYNC output.
+        # @param SYNC_Select A 3-bit integer which determines SYNC output frequency
+        # @param num_STEP the integer number of microsteps, numbers which are 
+        # powers of 2 up to 128 are acceptable.
+        
         for stepval in range(0,8): #convert num_STEPS to 3-bit power of 2
             if num_STEP ==1:
                 break
@@ -243,15 +236,12 @@ class Dual6470:
             SYNC_EN_Mask = 0x00
         self._set_par_1b('STEP_MODE', SYNC_EN_Mask|stepval|SYNC_Select)
         
-    ## Read a set of arguments which have been sent by the L6470's in
-    #  response to a read-register command which has already been
-    #  transmitted to the L6470's. The arguments are shifted into the
-    #  integers supplied as parameters to this function.
-    #  @param num_bytes The number of bytes to be read from each L6470
-    
-        
     def _read_bytes (self, num_bytes):
-
+        ## Read a set of arguments which have been sent by the L6470's in
+        #  response to a read-register command which has already been
+        #  transmitted to the L6470's. The arguments are shifted into the
+        #  integers supplied as parameters to this function.
+        #  @param num_bytes The number of bytes to be read from each L6470
         data_1 = 0
         data_2 = 0
 
@@ -268,14 +258,13 @@ class Dual6470:
         #print("in read bytes motor 1 is " + str(bin(data_1)))
         #print("in read bytes motor 2 is " + str(bin(data_2)))
         return ([data_1, data_2])
-    ## Send one byte to each L6470 as a command and receive two bytes
-    #  from each driver in response. 
-    #  @param command_byte The byte which is sent to both L6470's 
-    #  @param recv_bytes The number of bytes to receive: 1, 2, or 3
-
-
+    
     def _get_params (self, command_byte, recv_bytes):
-
+        ## Send one byte to each L6470 as a command and receive two bytes
+        #  from each driver in response. 
+        #  @param command_byte The byte which is sent to both L6470's 
+        #  @param recv_bytes The number of bytes to receive: 1, 2, or 3
+        
         # Send the command byte, probably a read-something command
         self._sndbs (command_byte, command_byte)
 
@@ -284,12 +273,12 @@ class Dual6470:
 
         
         return([data_1, data_2])
-    ## Set a parameter to both L6740 drivers, in a register which needs 
-    #  two bytes of data.0
-    #  @param reg_name (string) The register to be set
-    #  @param num The two-byte number to be put in that register
 
     def _set_par_2b (self, reg_name, num):
+        ## Set a parameter to both L6740 drivers, in a register which needs 
+        #  two bytes of data.0
+        #  @param reg_name (string) The register to be set
+        #  @param num The two-byte number to be put in that register
         reg = self.REGISTER_DICT[reg_name][0]
         self._sndbs (reg, reg)
         highb = (num >> 8) & 0x03
@@ -297,36 +286,30 @@ class Dual6470:
         lowb = num & 0xFF
         self._sndbs (lowb, lowb)
 
-
-    ## Set a parameter to both L6740 drivers, in a register which needs 
-    #  one byte of data.
-    #  @param reg_name (string) The register to be set
-    #  @param num The one-byte number to be put in that register
-
     def _set_par_1b (self, reg_name, num):
+        ## Set a parameter to both L6740 drivers, in a register which needs 
+        #  one byte of data.
+        #  @param reg_name (string) The register to be set
+        #  @param num The one-byte number to be put in that register
         reg = self.REGISTER_DICT[reg_name][0]
         self._sndbs (reg, reg)
         self._sndbs (num, num)
 
-
-    ## Send one command byte to each L6470. No response is expected.
-    #  @param byte_1 The byte sent first; it goes to the second chip
-    #  @param byte_2 The byte sent second, to go to the first chip
-
     def _sndbs (self, byte_1, byte_2):
-
+        ## Send one command byte to each L6470. No response is expected.
+        #  @param byte_1 The byte sent first; it goes to the second chip
+        #  @param byte_2 The byte sent second, to go to the first chip
+    
         self.cs_pin.low ()
         self.spi.send (byte_1)
         self.spi.send (byte_2)
         self.cs_pin.high ()
 
-
-    ## Send a command byte only to one motor. The other motor is sent a NOP
-    #  command (all zeros).
-    #  @param motor The number, 1 or 2, of the motor to receive the command
-
     def _cmd_1b (self, motor, command):
-
+        ## Send a command byte only to one motor. The other motor is sent a NOP
+        #  command (all zeros).
+        #  @param motor The number, 1 or 2, of the motor to receive the command
+        
         if motor == 1:
             self._sndbs (command, 0x00)
         elif motor == 2:
@@ -334,16 +317,14 @@ class Dual6470:
         else:
             raise ValueError ('Invalid L6470 motor number; must be 1 or 2')
 
-
-    ## Send a command byte plus three bytes of associated data to one of
-    #  the motors. 
-    #  @param motor The motor to receive the command, either 1 or 2
-    #  @param command The one-byte command to be sent to one motor
-    #  @param data The data to be sent after the command, in one 32-bit
-    #    integer
-
     def _cmd_3b (self, motor, command, data):
-
+        ## Send a command byte plus three bytes of associated data to one of
+        #  the motors. 
+        #  @param motor The motor to receive the command, either 1 or 2
+        #  @param command The one-byte command to be sent to one motor
+        #  @param data The data to be sent after the command, in one 32-bit
+        #    integer
+        
         # Break the integer containing the data into three bytes
         byte_2 = (data >> 16) & 0x0F
         byte_1 = (data >> 8) & 0xFF
@@ -369,15 +350,14 @@ class Dual6470:
 
     '''-------------------------------------------------------'''  
     
-    ## Tell the motor to run at the given speed. The speed may be 
-    #  positive, causing the motor to run in direction 0, or negative,
-    #  causing the motor to run in direction 1. 
-    #  @param motor Which motor to move, either 1 or 2
-    #  @param steps_per_sec The number of steps per second at which to
-    #      go, up to the maximum allowable set in @c MAX_SPEED
-
     def Run (self, motor, steps_per_sec):
-
+        ## Tell the motor to run at the given speed. The speed may be 
+        #  positive, causing the motor to run in direction 0, or negative,
+        #  causing the motor to run in direction 1. 
+        #  @param motor Which motor to move, either 1 or 2
+        #  @param steps_per_sec The number of steps per second at which to
+        #      go, up to the maximum allowable set in @c MAX_SPEED
+        
         # Figure out the direction from the sign of steps_per_sec
         if steps_per_sec < 0:
             direc = 0
@@ -400,15 +380,14 @@ class Dual6470:
 
     '''-------------------------------------------------------'''
 
-    ## Tell motor driver @c motor to move @c num_steps in the direction
-    #  @c direction. 
-    #  @param motor Which motor to move, either 1 or 2
-    #  @param steps How many steps to move, in a 20 bit number 
-    #  @param direc The direction in which to move, either 0 for one
-    #      way or nonzero for the other; if unspecified, the sign of the
-    #      number of steps will be used, positive meaning direction 0
-
     def Move (self, motor, steps, direc = None):
+        ## Tell motor driver @c motor to move @c num_steps in the direction
+        #  @c direction. 
+        #  @param motor Which motor to move, either 1 or 2
+        #  @param steps How many steps to move, in a 20 bit number 
+        #  @param direc The direction in which to move, either 0 for one
+        #      way or nonzero for the other; if unspecified, the sign of the
+        #      number of steps will be used, positive meaning direction 0
 
         # Figure out the intended direction
         if direc == None:
@@ -427,14 +406,12 @@ class Dual6470:
 
     '''-------------------------------------------------------'''
 
-
-    ## This command asks the specified motor to move to the specified 
-    #  position. 
-    #  @param motor Which motor to move, either 1 or 2
-    #  @param pos_steps The position to which to move, in absolute steps
-
     def GoTo (self, motor, pos_steps):
-
+        ## This command asks the specified motor to move to the specified 
+        #  position. 
+        #  @param motor Which motor to move, either 1 or 2
+        #  @param pos_steps The position to which to move, in absolute steps
+        
         # Call the _cmd_3b() method to do most of the work
         self._cmd_3b (motor, self.COMMAND_DICT['GoTo'], pos_steps & 0x003FFFFF)
 
@@ -447,7 +424,15 @@ class Dual6470:
         
     '''-------------------------------------------------------'''
 
-    def GoUntil (self, motor, steps_per_sec, Home = 0, direc = None):
+    def GoUntil (self, motor, steps_per_sec, direc = None):
+        '''Goes until a switch has been hit.
+        @param motor is the value 1 or 2 of the motor on the board
+                being ordered to move.
+        @param steps_per_sec is the speed at which you want the
+                motor to move in steps per second.
+        @param direc indicates the direction you want. This is
+                superceeded by the direction indicated by the 
+                param steps_per_sec'''
         
         # Figure out the direction from the sign of steps_per_sec
         if steps_per_sec < 0:
@@ -455,14 +440,13 @@ class Dual6470:
             steps_per_sec = -steps_per_sec
         else:
             direc = 1
-        if Home == 1:
-            Home<<3
+            
         # Convert to speed register value: multiply by ~(250ns)(2^28)
         steps_per_sec *= 67.108864
         steps_per_sec = int (steps_per_sec)
 
         # Have the _cmd_3b() method write the command to a driver chip
-        self._cmd_3b (motor, self.COMMAND_DICT['GoUntil'] | direc, Home,
+        self._cmd_3b (motor, self.COMMAND_DICT['GoUntil'] | direc,
                             steps_per_sec & 0x000FFFFF)
 
 
@@ -490,13 +474,10 @@ command can be given only when the previous motion command has been completed
         
     '''-------------------------------------------------------'''
 
-    ## This command sets the given motor driver's absolute position register
-    #  to zero.
-    #  @param motor The motor whose position is to be zeroed, either 1 or 2
-
-
     def ResetPos (self, motor):
-
+        ## This command sets the given motor driver's absolute position register
+        #  to zero.
+        #  @param motor The motor whose position is to be zeroed, either 1 or 2
         self._cmd_1b (motor, self.COMMAND_DICT['ResetPos'])
 
     '''-------------------------------------------------------'''
@@ -507,52 +488,44 @@ command can be given only when the previous motion command has been completed
         
     '''-------------------------------------------------------'''
 
-    ## Tell a motor driver to decelerate its motor and stop wherever it ends
-    #  up after the deceleration.
-    #  @param motor Which motor is to halt, 1 or 2
-
     def SoftStop (self, motor):
-
+        ## Tell a motor driver to decelerate its motor and stop wherever it ends
+        #  up after the deceleration.
+        #  @param motor Which motor is to halt, 1 or 2
         self._cmd_1b (motor, self.COMMAND_DICT['SoftStop'])
 
     '''-------------------------------------------------------'''
 
-    ## Tell the specified motor to stop immediately, not even doing the usual
-    #  smooth deceleration. This command should only be used when the compost
-    #  is really hitting the fan because it asks for nearly infinite 
-    #  acceleration of the motor, and this will probably cause the motor to
-    #  miss some steps and have an inaccurate position count. 
-    #  @param motor Which motor is to halt, 1 or 2
-
     def HardStop (self, motor):
-
+        ## Tell the specified motor to stop immediately, not even doing the usual
+        #  smooth deceleration. This command should only be used when the compost
+        #  is really hitting the fan because it asks for nearly infinite 
+        #  acceleration of the motor, and this will probably cause the motor to
+        #  miss some steps and have an inaccurate position count. 
+        #  @param motor Which motor is to halt, 1 or 2
         self._cmd_1b (motor, self.COMMAND_DICT['HardStop'])
 
     '''-------------------------------------------------------'''
     
-    ## Tell the specified motor to decelerate smoothly from its motion, then
-    #  put the power bridges in high-impedance mode, turning off power to the
-    #  motor. 
-    #  @param motor Which motor is to be turned off, 1 or 2
-
     def SoftHiZ (self, motor):
-
+        ## Tell the specified motor to decelerate smoothly from its motion, then
+        #  put the power bridges in high-impedance mode, turning off power to the
+        #  motor. 
+        #  @param motor Which motor is to be turned off, 1 or 2
         self._cmd_1b (motor, self.COMMAND_DICT['SoftHiZ'])
 
     '''-------------------------------------------------------'''
-    
-    ## Tell the specified motor to stop and go into high-impedance mode (no
-    #  current is applied to the motor coils) immediately, not even doing the 
-    #  usual smooth deceleration. This command should only be used when the 
-    #  compost is really hitting the fan because the motor is put into a
-    #  freewheeling mode with no control of position except for the small 
-    #  holding torque from the magnets in a PM hybrid stepper, and this will 
-    #  probably cause the motor to miss some steps and have an inaccurate 
-    #  position count. 
-    #  @param motor Which motor is to be turned off, 1 or 2
 
     def HardHiZ (self, motor):
-
+        ## Tell the specified motor to stop and go into high-impedance mode (no
+        #  current is applied to the motor coils) immediately, not even doing the 
+        #  usual smooth deceleration. This command should only be used when the 
+        #  compost is really hitting the fan because the motor is put into a
+        #  freewheeling mode with no control of position except for the small 
+        #  holding torque from the magnets in a PM hybrid stepper, and this will 
+        #  probably cause the motor to miss some steps and have an inaccurate 
+        #  position count. 
+        #  @param motor Which motor is to be turned off, 1 or 2
         self._cmd_1b (motor, self.COMMAND_DICT['HardHiZ'])
 
     '''-------------------------------------------------------'''
@@ -564,19 +537,18 @@ command can be given only when the previous motion command has been completed
         return status
     '''-------------------------------------------------------'''
     
-    ## Get the positions stored in the drivers for the selected motor. Each
-    #  driver stores its motor's position in a 22-bit register. If only
-    #  one position is needed, it's efficient to get both because the
-    #  drivers are daisy-chained on the SPI bus, so we have to send two
-    #  commands and read a bunch of bytes of data anyway. 
-    #  @return The current positions of the selected motor
-    
 #   -----------------Secondary Functions-------------------
 
     '''-------------------------------------------------------'''
     
     def getPositions (self, motor):
-
+        ## Get the positions stored in the drivers for the selected motor. Each
+        #  driver stores its motor's position in a 22-bit register. If only
+        #  one position is needed, it's efficient to get both because the
+        #  drivers are daisy-chained on the SPI bus, so we have to send two
+        #  commands and read a bunch of bytes of data anyway. 
+        #  @return The current positions of the selected motor
+        
         # Read (command 0x20) register 0x01, the current position
         [data_1, data_2] = self._get_params (self.COMMAND_DICT['GetParam']|self.REGISTER_DICT['ABS_POS'][0], 3)
         print("motor 1 is " + str(bin(data_1)))
