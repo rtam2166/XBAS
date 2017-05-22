@@ -1428,11 +1428,47 @@ def Buzzer(Input):
     else:
         BuzzerChannel.pulse_width_percent(0)
         
-# Solenoid and DC Motor Pin call outs
-SolenoidLeft = pyb.Pin (pyb.Pin.cpu.B0, mode = pyb.Pin.OUT_PP)
-SolenoidRight = pyb.Pin (pyb.Pin.cpu.B7, mode = pyb.Pin.OUT_PP)
-DCMotorLeft = pyb.Pin (pyb.Pin.cpu.A4, mode = pyb.Pin.OUT_PP)
-DCMotorLeft = pyb.Pin (pyb.Pin.cpu.B6, mode = pyb.Pin.OUT_PP)
+# Solenoid and DC Motor Pin call outs and functions for controlling
+#   said pins.
+SolenoidLeftPin = pyb.Pin (pyb.Pin.cpu.B0, mode = pyb.Pin.OUT_PP)
+def SolenoidLeft(Input):
+    '''This function turns the left solenoid on and off
+    Function Input: Input is a string of either "On" or "Off"
+                    which turns the solenoid on or off'''
+    if Input == "On":
+        SolenoidLeftPin.Low()
+    elif Input == "Off"
+        SolenoidLeftPin.High()
+        
+SolenoidRightPin = pyb.Pin (pyb.Pin.cpu.B7, mode = pyb.Pin.OUT_PP)
+def SolenoidRight(Input):
+    '''This function turns the right solenoid on and off
+    Function Input: Input is a string of either "On" or "Off"
+                    which turns the solenoid on or off'''
+    if Input == "On":
+        SolenoidRightPin.Low()
+    elif Input == "Off"
+        SolenoidRightPin.High()
+        
+DCMotorLeftPin = pyb.Pin (pyb.Pin.cpu.A4, mode = pyb.Pin.OUT_PP)
+def DCMotorLeft(Input):
+    '''This function turns the left DC motor on and off
+    Function Input: Input is a string of either "On" or "Off"
+                    which turns the motor on or off'''
+    if Input == "On":
+        DCMotorLeftPin.Low()
+    elif Input == "Off"
+        DCMotorLeftPin.High()
+        
+DCMotorRightPin = pyb.Pin (pyb.Pin.cpu.B6, mode = pyb.Pin.OUT_PP)
+def DCMotorRightInput):
+    '''This function turns the right DC motor on and off
+    Function Input: Input is a string of either "On" or "Off"
+                    which turns the motor on or off'''
+    if Input == "On":
+        DCMotorRightPin.Low()
+    elif Input == "Off"
+        DCMotorRightPin.High()
 
 # The Piano Switch Board Pins numbered 0 to 4 from left to right, left most
 #   switch being Note0
