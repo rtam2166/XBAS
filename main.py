@@ -528,8 +528,8 @@ def Probe():
         return("Error Occured")
         
 def Move_Gantry_To(Destination, probe = False):
-    '''Function which utalizes code  written by John Barry and modified by
-    Whittaker Hamill to drive the stepper motors.
+    '''Function which utalizes code from the l6470nucleo.py file to drive the
+    stepper motors.
     
     Function runs the gantry till it stalls (in which case the system throws an
     error and waits for user input) or it reaches the destination in which case
@@ -541,16 +541,19 @@ def Move_Gantry_To(Destination, probe = False):
             retrn the value read by the probe at the end. If not, then the
             function will return "Done".'''
     
-    DistancePerRev = 000000     # Variable indicating the distance traveled
+    DistancePerRev = 2          # Variable indicating the distance traveled
                                 #   per revolution of the stepper motor,
-                                #   dependent on the leadscrew pitch
-    StepsPerRev = 00000         # Variable indicating the number of steps
-                                #   per revolution for the stepper motor
+                                #   dependent on the leadscrew pitch. Value is
+                                #   in mm
+    StepsPerRev = 200           # Variable indicating the number of steps
+                                #   per revolution for the stepper motor. This
+                                #   is # of full steps per revolution.
     xOffset = 00000     # Distance from gantry home position to the closest end
                         #   of the X-Beam.
     xLimit = 00000      # Maximum travel of the gantry from the end of the
                         #   X-Beam to the Lead Screw Raiser minus the gantry 
                         #   width
+    ISSUE See above 2 variables
     
     # Check that Destination is not outside of the 
     if Destination <= -xOffset:
