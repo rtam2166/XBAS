@@ -6,8 +6,10 @@
 
 def zero_flags():
     '''Function sets all error flag buffers to false aka 0 or its equivalent.
-    No input paramaters or returned values. Does require for the setup.py main
-    program to have been run so that the buffers exist.'''
+    No input paramaters or returned values. Does require for the task_share.py
+    file to be present and the main section of this program to have been run
+    so that the buffers exist.'''
+    
     ErrInit.put(0)
     ErrSleep.put(0)
     ErrLeveling.put(0)
@@ -38,6 +40,7 @@ def Mode():
     resistor_one = 1000 #ohms
     resistor_two = 1000 #ohms
     resistor_three = 1000 #ohms
+    ISSUE, see above resistor values
     
     # The supply voltage
     voltage_in = 3.3 #volts
