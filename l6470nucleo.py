@@ -9,8 +9,8 @@
 #  @e etc. need to be tuned for that motor using the methods shown at
 #  @c http://www.st.com/resource/en/application_note/dm00061093.pdf. 
 #
-#  @author JR Ridgely
-
+#  @author John Ridgely, John Barry, Anthony Lombardi, 
+#           Whittaker Hamill, and Sam Artho-Bentz
 
 import pyb
 import time
