@@ -1175,7 +1175,7 @@ def TorqueDown(Input):
     # 1st Layer while loop
     while True:        
         # Set torque for the approach to the rails at a very low stall torque
-        Board2._setStallThreshold() ISSUE
+        Board2._setStallThreshold() ISSUE test this
         
         # Turn on actuators and move twoards a position just above the rails
         if Input == "L":
@@ -1278,10 +1278,10 @@ def TorqueDown(Input):
                 utime.sleep(100)
     
                 # home the rail actoators depedning on side being done
-                if Input == "L" or Input == "B":
+                if Input == "L":
                     # Left Side
                     Home Left Actuator
-                if Input == "R" or Input == "B::
+                if Input == "R":
                     # Right Side
                     Home Right Actuator
     
