@@ -1176,8 +1176,7 @@ def TorqueDown(Input):
         None'''
     
     # Rail Actuators constants
-    StepPerRev = XXX
-    RevPerDistance = XXX
+    DistancePerStep = .0079375 # mm linear travel per step
     
     # Position above rails in mm away from the motor. Does not have
     #   to be very accurate (+/- 1mm)
@@ -1185,11 +1184,11 @@ def TorqueDown(Input):
                             # small for human fingers
     # Covert PositionAboveRails from distance in mm to steps for the 
     #   drivers
-    PositionAboveRails = PositionAboveRails * RevPerDistance * StepsPerRev
+    PositionAboveRails = PositionAboveRails / DistancePerStep
     
     # Calculating position above granite from the motor just as with
     #   PositionAboveRails
-    PositionAboveGranite = PositionAboveGranite * RevPerDistance * StepsPerRev
+    PositionAboveGranite = PositionAboveGranite / DistancePerStep
     
     # 1st Layer while loop
     while True:        
