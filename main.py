@@ -376,9 +376,9 @@ def Lights_Sound_Action():
             # Check Buzzer for if it should run or not. Should not run if Stop
             #   is not 0 meaning user hit go at some point.
             if Stop == 0:
-                Turn On Buzzer
+                Buzzer("On")
             else:
-                Turn Off Buzzer
+                Buzzer("Off")
                 
             # Check what LEDs should be on
             if Green == 1:
@@ -389,7 +389,7 @@ def Lights_Sound_Action():
                 RedLED.High()
         else:
             # Buzzer should be off
-            Turn Off Buzzer
+            Buzzer("Off")
                 
             # Check what LEDs should be blinking. If so, then the LEDs now
             #   need to be off.
@@ -500,26 +500,30 @@ def callback():
             break
     # Soft reset
     import sys
-    
     sys.exit()
 
-def Probe():
+def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
     '''Lower Probe, Take measurement, Check measurement, Raise the probe if no
     error. If not, throw an error.
-    @return Returns the value of the measurement taken. Otherwise returns 
-            message "Error Occured"'''
-    ReadingUpprLimit = 10   # Upper limit of acceptable probe values
-    ReadingLwrLimit = 0     # Lower limit of acceptable probe values
+    Function Inputs:
+        Limit is True or False, defaulting to False. If the Limit is False, the
+            function does not check teh value taken against the upper and lower
+            limits. If True, it does compare.
+    Function Outputs: Returns the value of the measurement taken. Otherwise
+            returns message "Error Occured" if the reading is outside the
+            given limits.
+            '''
     
     Lower Probe
     Take Reading
     
-    # Check Reading
-    if Reading > ReadingUpprLimit:
-        ErrProbe.put(1)
-    elif Reading < ReadingLwrLimit:
-        ErrProbe.put(1)
-        
+    # Check Reading is within the limits if the Limit flag is true
+    if Limit = True
+        if Reading > UpperLimit:
+            ErrProbe.put(1)
+        elif Reading < LowerLimit:
+            ErrProbe.put(1)
+
     Retract probe
     
     # If there was or was not an error
@@ -540,6 +544,9 @@ def Move_Gantry_To(Destination, probe = False):
     
     @param Destination is the input distance x in millimeters from the end of
             the X-Beam you want to run to.
+    @param probe is True or False, defaulting to False if not called. If True,
+            the function will call the probe function to do one measurement
+            at the end of the move. If False, it will not do that measurement.
     @return Returns one of two things. If the probe == True, the system will
             retrn the value read by the probe at the end. If not, then the
             function will return "Done".'''
@@ -582,14 +589,23 @@ def Move_Gantry_To(Destination, probe = False):
     
     # If done moving gantry and probe option is true, take measurement
     if probe == True:
-        reading = Probe()
-        if type(reading) == int or type(reading) == float:    
-            return(reading)
-        if type(reading) == str:
+        # check the error flags to determine what mode the machine is in.
+        #   if it is in calibration, then the probe does not need limits on
+        #   its measurement. If it is leveling, then it does.
+        if ErrCal.get() == 1:
+            reading = Probe()
+        elif ErrAssembly.get() == 1 or ErrLeveling.get() == 1:
+            UpprLimit = 
+            LwrLimit = 
+            reading = Probe(Limit = True, UpperLimit = UpprLimit,LowerLimit = LwrLimit)
+
+        if type(reading) == "Error Occured":
             # Error occured, but should have been solved as the Probe function
             #   shouldn't be able to finish if there was an error.
             return("Error Occured")
             pass
+        else:
+            return(reading)
     # Else if the gantry is done moving and probe option in false, return
     elif probe == False:
         return("Done")
@@ -1504,6 +1520,9 @@ Emergency_Stop = Stop_Pin.value
 # Three Position Swtich Pin
 ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 ThreeSwitch = ThreeSwitch_Pin.read
+
+# External Interrupt Pin
+extint = pyb.ExtInt(pin, pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, callback)
 
 # Stepper Driver pin and  object creations
 import l6470nucleo                  # Import file
