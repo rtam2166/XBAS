@@ -37,30 +37,30 @@ def Mode():
     value = ThreeSwitch()
     
     # Pins by Voltage in voltage
-    V1 = 3.3  # Third position
+    V3 = 3.3  # Third position
     V2 = 1.65 # Second position
-    V3 = 1.1  # First position
+    V1 = 1.1  # First position
     
     # The tolerance indicating the range of acceptable values
     tolerance = 0.25 # volts
     
     # Voltages and tolerances converted to value from 0 to 4095
     TickPerVolt = V1/4096
-    V1 = V1/TickPerVolt
-    V2 = V2/TickPerVolt
     V3 = V3/TickPerVolt
+    V2 = V2/TickPerVolt
+    V1 = V1/TickPerVolt
     tolerance = tolerance/TickPerVolt
     
     # Check if the first position has been selected
-    if value < V1 + tolerance and value > V1 - tolerance:
+    if value =< V1 + tolerance and value >= V1 - tolerance:
            return(1)
            
     # Check if the second position has been selected
-    elif value < V2 + tolerance and value > V2 - tolerance:
+    elif value =< V2 + tolerance and value >= V2 - tolerance:
            return(2)
            
     # Check if the third position has been selected
-    elif value < V3 + tolerance and value > V3 - tolerance:
+    elif value =< V3 + tolerance and value >= V3 - tolerance:
            return(3)
            
     else:
@@ -116,9 +116,9 @@ def FileCheck():
                     " pyboard\n\r\n\r")
             
             # Written Error report should look like...
-            # There was an error during the initilization phase
-            # The file main.py is missing
-            # Recommened action: Copy main.py from a backup onto the pyboard
+            #   There was an error during the initilization phase
+            #   The file main.py is missing
+            #   Recommened action: Copy main.py from a backup onto the pyboard
     
     # Finished writing to Error Report, close the text file
     f.close()
