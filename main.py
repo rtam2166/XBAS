@@ -36,34 +36,31 @@ def Mode():
     # Get the reading from the three position switch analog pin
     value = ThreeSwitch()
     
-    # The resistors attatched to the inputs of the three position switch
-    resistor_one = 1000 #ohms
-    resistor_two = 1000 #ohms
-    resistor_three = 1000 #ohms
-    ISSUE, see above resistor values
-    
-    # The supply voltage
-    voltage_in = 3.3 #volts
-    
-    # The supply current
-    current = 300/1000 #amps
+    # Pins by Voltage in voltage
+    V1 = 3.3  # Third position
+    V2 = 1.65 # Second position
+    V3 = 1.1  # First position
     
     # The tolerance indicating the range of acceptable values
-    tolerance = 0.5 #volts
+    tolerance = 0.25 # volts
+    
+    # Voltages and tolerances converted to value from 0 to 4095
+    TickPerVolt = V1/4096
+    V1 = V1/TickPerVolt
+    V2 = V2/TickPerVolt
+    V3 = V3/TickPerVolt
+    tolerance = tolerance/TickPerVolt
     
     # Check if the first position has been selected
-    if value < (voltage_in - current*resistor_one) + tolerance and \
-       value > (voltage_in - current*resistor_one) - tolerance:
+    if value < V1 + tolerance and value > V1 - tolerance:
            return(1)
            
     # Check if the second position has been selected
-    elif value < (voltage_in - current*resistor_two) + tolerance and \
-       value > (voltage_in - current*resistor_two) - tolerance:
+    elif value < V2 + tolerance and value > V2 - tolerance:
            return(2)
            
     # Check if the third position has been selected
-    elif value < (voltage_in - current*resistor_three) + tolerance and \
-       value > (voltage_in - current*resistor_three) - tolerance:
+    elif value < V3 + tolerance and value > V3 - tolerance:
            return(3)
            
     else:
@@ -1518,7 +1515,8 @@ Emergency_Stop = Stop_Pin.value
 
 # Three Position Swtich Pin
 ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
-ThreeSwitch = ThreeSwitch_Pin.read
+adc = pyb.ADC(ThreeSwitch_Pin)
+ThreeSwitch = adc.read
 
 # External Interrupt Pin
 extint = pyb.ExtInt(pin, pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, callback)
