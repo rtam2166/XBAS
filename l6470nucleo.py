@@ -570,8 +570,13 @@ command can be given only when the previous motion command has been completed
             data = data_1
         else:
             data = data_2
-        #return (BitUtilities.GetTwosComplement(data, 22))
+        return (self.GetTwosComplement(data, 22))
     '''-------------------------------------------------------'''
+    def GetTwosComplement(data, length):
+        if (data & (1 << (length - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+        data = data - (1 << length)        # compute negative value
+        return val                         # return positive value as is
+    
     def isStalled(self, motor):
         status = self.GetStatus(1)
         if ((status[motor-1]&(1<<13) == 0) or (status[motor-1]&(1<<14) == 0)):
