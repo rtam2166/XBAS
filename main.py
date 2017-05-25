@@ -24,6 +24,7 @@ def zero_flags():
     ErrFileCheck.put(0)
     ErrSong.put(0)
     XBeam.put(0)
+    print("Flags Zeroed")
 
 def Mode():
     '''Function which is used to read and return the selection of the three
@@ -50,6 +51,7 @@ def Mode():
     V2 = V2/TickPerVolt
     V1 = V1/TickPerVolt
     tolerance = tolerance/TickPerVolt
+    print("Three Pos Switch read value: "+str(value))
     
     # Check if the first position has been selected
     if value =< V1 + tolerance and value >= V1 - tolerance:
@@ -76,6 +78,7 @@ def FileCheck():
     Takes no paramaters.
     @return Function returns a string if an error occured, an integer if not.
     '''
+    print("Checking Files")
     Switch = 0      # Indicates if an error has occured. Used so that the error
                     #   message indicating that the error occured during the
                     #   initilization phase is written only once at the
@@ -126,9 +129,10 @@ def FileCheck():
     if Switch != 0:
         # If there was an error, set flag
         ErrFileCheck.put(1)
-        
+        print("File Check Done, error occured")
         return("An Error Occured, please see the 'Error Report.txt' file")
     else:
+        print("File Check Done, no errors")
         return(0)
 
 def ImportBoltPattern():
@@ -492,10 +496,12 @@ def callback():
     '''This is a function which runs during interrupts. This should occur when
     the emergecny stop button is pressed down. It waits until the emergency
     stop has been disengaged and initiates a soft restart'''
+    print("Emergency Stop On")
     while True:
         if Emergency_Stop() == 0:
             break
     # Soft reset
+    print("Emergency Stop Off")
     import sys
     sys.exit()
 
@@ -1511,15 +1517,30 @@ Go = Go_Pin.value
 # The same as the Go pin, but greating a short function call for the emergency
 #   stop button.
 Stop_Pin = pyb.Pin(pyb.Pin.cpu.C5, mode = pyb.Pin.In)
-Emergency_Stop = Stop_Pin.value
+
+# External Interrupt Pin
+extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, callback)
 
 # Three Position Swtich Pin
 ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 adc = pyb.ADC(ThreeSwitch_Pin)
 ThreeSwitch = adc.read
 
-# External Interrupt Pin
-extint = pyb.ExtInt(pin, pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, callback)
+# Probe Pins
+#   H1 is the referencetick
+pyb.Pin(pyb.Pin.cpu.H1, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_DOWN)
+
+#   B9 high sends the probe up if B8 is low
+pyb.Pin(pyb.Pin.cpu.B9, mode = pyb.Pin.OUT_PP, pull = pyb.Pin.PULL_DOWN)
+
+#   B8 high sends the probe down if B9 is low
+pyb.Pin(pyb.Pin.cpu.B8, mode = pyb.Pin.OUT_PP, pull = pyb.Pin.PULL_DOWN)
+
+# C6 encoder ch1
+ISSUE
+
+# C7 encoder ch2
+ISSUE
 
 # Stepper Driver pin and  object creations
 import l6470nucleo                  # Import file
