@@ -247,7 +247,7 @@ def ImportBoltPattern():
     
     '''If there were no issues in the lists, return the two lists'''
     if error == 0:
-        print("No Errors, both lists good. Returning the two lists now")
+        print("No Errors importing "+FileName)
         return([BoltSide,BoltData])
     elif error != 0:
         print("An error has occured, exiting function")
@@ -274,21 +274,26 @@ def ImportCalibration():
     @input  This function takes inputs in by reading the buffer XBeam for the
             necessary information which is an integer indicating XBeam length
     @return This function returns a string if there was an error. If not, the
-            function returns a list of values'''
-    
+            function returns a list of values'''            
+                  
+    print("Beginning to import CalibrationXXX.csv")
+
     # Getting length value of the X-Beam from the buffer XBeam
     Input = XBeam.get()
-    
+    print("Working X-Beam "+str(Input))
+
     # Creating the name of the file to be imported
     FileName = "Calibration"+str(Input)+".csv"
-    
+    print("File name assotiated with X-Beam: "+FileName)
+
     # a function unique binary error flag indicating which error has occured.
     error = 0
-    
+
     try:
         '''Attempt to import the Calibration file indicated by the input.'''
         with open(FileName,'r') as file:
            '''File does exist, process the data as indicated'''
+           print("File Opened, processing data and checking items")
            for line in file:
               String = str(line)              # Bring in line of info from csv
                                               #    file
@@ -302,12 +307,15 @@ def ImportCalibration():
                   try:
                       '''Try to turn the item into a float'''
                       List[i] = float(item)
+                      print("Item "+str(i)+" checked and is valid")
                       
                   except ValueError:
                       '''Error indicating invalid input'''
                       String.append("Error in "+FileName+" Line "+str(i+1)+
                                     ": '"+item+"' is not a valid input")
                       ErrCalCsv.put(1)
+                      print("Error in "+FileName+" Line "+str(i+1)+
+                                    ": '"+item+"' is not a valid input")
                       error = 1
                       
                   except TypeError:
@@ -315,25 +323,33 @@ def ImportCalibration():
                       String.append("Error in "+FileName+" Line "+str(i+1)+
                                     ": '"+item+"' is not a valid input")
                       ErrCalCsv.put(1)
+                      print("Error in "+FileName+" Line "+str(i+1)+
+                                    ": '"+item+"' is not a valid input")
                       error = 1
+                  
                   i = i+1
               
     except FileNotFoundError:
         '''Exception to report that the file is missing'''
+        print("Unable to open CalibrationXXX.csv file")
         String = ["Error,Missing Calibration"+str(Input)+".csv File"]
         ErrCalCsv.put(1)
         error = 1
     
     if error == 0:
+        print("No error importing "+FileName)
         return(List) # return the final list of values
+                  
     elif error != 0:
         f = open("Error Report.txt","w")
         for item in String:
             f.write(item)
         f.close()
+        print("Error Occured importing "+FileName)
         return("Error Occured")
     else:
-        return("Error Occured")
+        return('''Error Occured, error flag in ImportCalibration was not 0 or 1
+               at the end of the function''')
     
 def Lights_Sound_Off():
     '''Turns all LEDs and the buzzer off
@@ -341,12 +357,14 @@ def Lights_Sound_Off():
     RedLED.Low()
     YellowLED.Low()
     GreenLED.Low()
-    Turn Buzzer off command  
+    Buzzer("Off")
+    print("All Lights and Sound have been turned off")
     
 def Lights_Sound_Action():
     '''This function turns on various LEDs and controls the buzzer depending on
     the error flags which have been raised. Function has no input paramaters or
     returned values'''
+    print("Lights_Sound_Action() has been called. Let the show begin.")
     Lights_Sound_Off()      # Turn lights off
     Switch = 0              # Switch is bolean variable that switches each run
                             #   of the LEDs and buzzer so the system knows to
@@ -363,33 +381,40 @@ def Lights_Sound_Action():
         Green = 1
         Yellow = 1
         Red = 1
+        print("File Error detected")
     elif ErrGantry.get() == 1:
         # If the Gantry error flag is raised, tell system to turn on green and
         #   yellow LEDs, no blinking
         Green = 1
         Yellow = 1
+        print("Gantry Error detected")
     elif ErrProbe.get() == 1:
         # If Probe flag raised, yellow and red LED, no blinking
         Yellow = 1
         Red = 1
+        print("Probe Error detected")
     elif ErrBeamAct.get() == 1:
         # If beam actuator flag raised, green and red LED, no blinking
         Green = 1
         Red = 1
+        print("Beam Actuator Error detected")
     elif ErrSong.get() == 1:
         # If Song error flag raised, all LEDs on, blinking
         Green = 1
         Yellow = 1
         Red = 1
         Blink = 1
+        print("Piano Switch Board Combination Error detected")
     elif ErrRailActR.get()==1 or ErrRailActL.get() == 1:
         # If Either rail actuator flags are raised
         Green = 1
         Yellow = 1
         Red = 0
         Blink = 1
+        print("One or Both of the Rail Actuators Error detected")
     else:
         # No error, Set Green LED, turn noise on 1 sec
+        print("No Error detected, doing the green light and 1 second beep")
         GreenLED.High()
         Buzzer On
         utime.sleep(1000)
