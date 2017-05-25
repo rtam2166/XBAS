@@ -51,21 +51,28 @@ def Mode():
     V2 = V2/TickPerVolt
     V1 = V1/TickPerVolt
     tolerance = tolerance/TickPerVolt
-    print("Three Pos Switch read value: "+str(value))
+    print("First Position value in ticks: "+str(V1))
+    print("Second Position value in ticks: "+str(V2))
+    print("Third Position value in ticks: "+str(V3))
+    print("Three Pos Switch read value in ticks: "+str(value))
     
     # Check if the first position has been selected
     if value =< V1 + tolerance and value >= V1 - tolerance:
-           return(1)
+        print("Selected Mode 1")
+        return(1)
            
     # Check if the second position has been selected
     elif value =< V2 + tolerance and value >= V2 - tolerance:
-           return(2)
+        print("Selected Mode 2")
+        return(2)
            
     # Check if the third position has been selected
     elif value =< V3 + tolerance and value >= V3 - tolerance:
-           return(3)
+        print("Selected Mode 3")
+        return(3)
            
     else:
+        print("No Mode Selected")
         return(0)
     
     
@@ -110,6 +117,7 @@ def FileCheck():
                         '\n\r')
                 Switch = 1
             f.write("The file "+file+" is missing\n\r")
+            print("The file "+file+" is missing)
             
             # If special action is required for a file, add an if statement
             #   here which checks for said file to write that specific
@@ -160,23 +168,29 @@ def ImportBoltPattern():
             of which side is to be bolted and the other containing positions
             relative to the gantry's zero position of where to move to.
     '''
+                  
+    print("Beginning to import BoltPatternXXX.csv")
     # Getting length value of the X-Beam from the buffer XBeam
     Input = XBeam.get()
+    print("Working X-Beam "+str(Input))
     
     # Creating the name of the file to be imported
     FileName = "BoltPattern"+str(Input)+".csv"
+    print("File name assotiated with X-Beam: "+FileName)
     
     # a function unique binary error flag indicating which error has occured.
     error = 0
     
     '''Open Error Report for editing'''
     f = open("Error Report.txt","w")
+    print("File Opened, checking values")
     
     try:
         '''Attempt to import the BoltPattern file indicated by the input.'''
         with open(FileName,'r') as file:
            '''File does exist, process the data as indicated'''
            i = 1
+           print("File Opened, splitting values into two seperate lists")
            for line in file:
                line = line.split(',')
                line[-1] = (line[-1].replace("\n",''))
@@ -185,9 +199,12 @@ def ImportBoltPattern():
                    BoltSide = line
                elif i == 2:
                    BoltData = line
+               print("Line "+str(i)+" processed")
                i = i+1
+               
     except FileNotFoundError:
         '''File doesn't exist, write to Error Report'''
+        print("Unable to open BoltPatternXXX.csv file")
         ErrBoltCsv.put(1)
         string = "Error, Missing "+FileName
         f.write(string)
@@ -196,6 +213,7 @@ def ImportBoltPattern():
     
     '''Check the values in the BoltSide list. If there is an error, write
     to the Error Report text file.'''
+    print("Checking items indicating sides in the BoltSide list")
     i = 1
     for item in BoltSide:
         if item != "R" and item != "L":
@@ -204,10 +222,14 @@ def ImportBoltPattern():
                         str(item)+"' is not a valid input"
             f.write(string)
             error = 1
+            print("Item "+str(i)+" checked, "+string)
+        else:
+            print("Item "+str(i)+" checked, no errors")
         i = i+1
         
     '''Check the values in the BoltData list. If there is an error, write
     to the Error Report text file.'''
+    print("Checking items indicating positions in the BoltData list")
     i = 1
     for item in BoltData:
         try:
@@ -218,12 +240,17 @@ def ImportBoltPattern():
                         str(item)+"' is not a valid input"
             f.write(string)
             error = 1
+            print("Item "+str(i)+" checked, "+string)
+        else:
+            print("Item "+str(i)+" checked, no errors")
         i = i+1
     
     '''If there were no issues in the lists, return the two lists'''
     if error == 0:
+        print("No Errors, both lists good. Returning the two lists now")
         return([BoltSide,BoltData])
     elif error != 0:
+        print("An error has occured, exiting function")
         f.close()
         return("An Error Occured, please see the 'Error Report.txt' file")
 
