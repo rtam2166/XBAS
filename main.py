@@ -1028,6 +1028,12 @@ def Leveling_Mode():
         None
     '''
 
+    print("Beginning Leveling half of the Assembly Mode")
+    
+    # Variable switch indicates if this is the first time the code is
+    #   running through the code. This is for the purpose of skipping
+    #   the pre-stage every run through after the first, ie after
+    #   error handling.
     switch = 0
     
     # While Loop 1st Layer
@@ -1071,14 +1077,17 @@ def Leveling_Mode():
                 # Wait for user to hit go or to switch system modes to a
                 #   different mode
                 while True:
+                    print("Waiting in pre-Assembly Stage")
                     if Go() == 1:
                         # Go was pressed, exit the 3rd Layer while loop and
                         #   resume the 2nd layer loop via a break command
+                        print("User hit Go, continue leveling and assmembly")
                         break
                     elif Mode() != 3:
                         # Else if the 3 position switch is not set to 3 which
                         #   is the assembly mode, then exit this function via 
                         #   return
+                        print("User selected different mode, exit function")
                         return()
             
             # Set switch to 1 so that on future runs, it skips the while loop
@@ -1097,6 +1106,7 @@ def Leveling_Mode():
             if Output == "Error Occured":
                 # Error occured, break 2nd layer loop to return to 1st layer 
                 #   loop and handle error
+                print("Error in ImportSong, handle error")
                 break
 
             # ImportSong() had no issues, continue by importing Calibration
@@ -1107,9 +1117,11 @@ def Leveling_Mode():
             if Output == "Error Occured":
                 # Error occured, break 2nd layer loop to return to 1st layer 
                 #   loop and handle error
+                print("Error in ImportCalibration, handle error")
                 break
             
             # Take data from Import Calibration and Store it for future use
+            print("Transcribe Calibrationdata to local variables")
             CalibrationData = Output
             NearSide = CalibrationData(0)
             FarSide = CalibrationData(1)
@@ -1123,29 +1135,37 @@ def Leveling_Mode():
             if type(Output) == str:
                 # If error, break out of 2nd layer into 1st layer for
                 #   error handling
+                print("Error in ImportBoltPattern, handle error")
                 break
                 
             # Move the Gantry to the far side and take the first measurement
+            print("Moving Gantry to far side and take measurement")
             Output = Move_Gantry_To(Farside, probe = True)
             
             # Check function output
             if Output == 'Error Occured':
                 # Error occured, break loop
+                print("Error in moving Gantry or probe, handle error")
                 break
             
             # Store output
             FarLevel = Output
             
             # Move the Gantry to the near side and take the first measurement
+            print("Moving Gantry to near side and take measurement")
             Output = Move_Gantry_To(Nearside, probe = True)
             
             # Check function output
             if Output == 'Error Occured':
                 # Error occured, break loop
+                print("Error in moving Gantry or probe, handle error")
                 break
 
             # Store output modified by calibration constant
             NearLevel = Output - CalConst
+            print("Calculate nearside w/cal constant")
+            print("    FarLevel "+str(FarLevel))
+            print("    NearLevel "+str(NearLevel))
             
             # Level X-Beam by actuating X-Beam Actuator to raise the X-Beam
             #   to the level needed.
@@ -1157,11 +1177,13 @@ def Leveling_Mode():
             x = x2/x1
             
             # Actuate X-Beam levveling actuator and measure
+            print("Actuate X-Beam actuator")
             Output = Beam Actuator by ((NearLevel - FarLevel)/x,probe = True)
             
             # Check output
             if Output == 'Error Occured':
                 # Error occured, break loop
+                print("Error w/beam actuator, handle error")
                 break
             
             # Store output
