@@ -430,9 +430,11 @@ def Lights_Sound_Action():
             #   is not 0 meaning user hit go at some point.
             if Stop == 0:
                 Buzzer("On")
+                print("Sound On")
             else:
+                print("Sound Off")
                 Buzzer("Off")
-                
+            print("LEDs On")
             # Check what LEDs should be on
             if Green == 1:
                 GreenLED.High()
@@ -442,21 +444,24 @@ def Lights_Sound_Action():
                 RedLED.High()
         else:
             # Buzzer should be off
+            print("Sound Off")
             Buzzer("Off")
                 
             # Check what LEDs should be blinking. If so, then the LEDs now
             #   need to be off.
+            print("LEDs off")
             if Blink == 1:
                 if Green == 1:
-                    GreenLED.High()
+                    GreenLED.Low()
                 if Yellow == 1:
-                    YellowLED.High()
+                    YellowLED.Low()
                 if Red == 1:
-                    RedLED.High()
+                    RedLED.Low()
             # Else just fall through to next part of the function
-        
+        print("Go pressed: "+str(Stop)+"\n\r")
+                  
         Current = utime.ticks_ms()
-        # Wait in the below while luup until the difference in time from the 
+        # Wait in the below while loop until the difference in time from the 
         #   beggining of the while loop to present >= 500ms or user hits go
         while True:
             if Go() == 1:
@@ -475,6 +480,7 @@ def Lights_Sound_Action():
         if Stop == 2:
             Lights_Sound_Off()
             YellowLED.High()
+            print("Exiting Lights_Sound_Action()")
             return()
             
         # Toggle switch so the system toggles sound and LEDs
@@ -487,6 +493,18 @@ def ErrorHandler():
     '''This function checks flags, prints errors, sets lights, and makes noise
     accordingly.
     '''
+                  
+    print("Beginning Error Handling")
+    print("ErrInit =     "+str(ErrInit.get()))
+    print("ErrSleep =    "+str(ErrSleep.get()))
+    print("ErrCal =      "+str(ErrCal.get()))
+    print("ErrLeveling = "+str(ErrLeveling.get()))
+    print("ErrAssembly = "+str(ErrAssembly.get()))
+    print("ErrProbe =    "+str(ErrProbe.get()))
+    print("ErrGantry =   "+str(ErrGantry.get()))
+    print("ErrBeamAct =  "+str(ErrBeamAct.get()))
+    print("ErrRailActR = "+str(ErrRailActR.get()))
+    print("ErrRailActL = "+str(ErrRailActL.get()))
     # There was no issues with all of the named error flags, check all of the
     #   other error flags
     if ErrFileCheck.get() == 0 and  \
