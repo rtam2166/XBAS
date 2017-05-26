@@ -578,6 +578,8 @@ command can be given only when the previous motion command has been completed
         return val                         # return positive value as is
     
     def isStalled(self, motor):
+        '''Returns True or False if the motor being checked has stalled. Erases the 
+        stall register of the other motor of the same board.'''
         status = self.GetStatus(1)
         if ((status[motor-1]&(1<<13) == 0) or (status[motor-1]&(1<<14) == 0)):
             return True
