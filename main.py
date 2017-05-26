@@ -588,25 +588,40 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
             returns message "Error Occured" if the reading is outside the
             given limits.
             '''
-    
+    print("Lowering probe")
     Lower Probe
-    Take Reading
+    
+    tolerance = 0
+    previous = 0
+    while True:
+        # wait for readings from probe to change (delta) by the tolerance amount
+        current = Take Reading
+        delta = current-previous
+        print("    delta = "+str(delta))
+        if delta <= tolerance or delta >= -tolerance:
+            break
+        
     
     # Check Reading is within the limits if the Limit flag is true
     if Limit = True
         if Reading > UpperLimit:
+            print("probe reading was above upper limit of readings")
             ErrProbe.put(1)
         elif Reading < LowerLimit:
+            print("probe reading was below lower limit of readings")
             ErrProbe.put(1)
 
+    print("Raising probe")
     Retract probe
     
     # If there was or was not an error
     if ErrProbe.get() == 0:
+        print("No error, exit")
         # No error, return
         return(Reading)
     else:
         # Error, return error message
+        print("Error Error Error Error")
         return("Error Occured")
         
 def Move_Gantry_To(Destination, probe = False):
@@ -654,13 +669,13 @@ def Move_Gantry_To(Destination, probe = False):
     
     # Wait for stall or finish flag
     while True:
-         if finish() == 1:
+        if finish() == 1:
              # if finish, exit the function
-             return("Done")
-         if stall() == 1:
-             # if stall, stop gantry, throw error and return
-             ErrGantry.put(1)
-             return("Error Occured")
+            return("Done")
+        elif stall() == 1:
+            # if stall, stop gantry, throw error and return
+            ErrGantry.put(1)
+            return("Error Occured")
     
     # If done moving gantry and probe option is true, take measurement
     if probe == True:
@@ -1198,6 +1213,7 @@ def Leveling_Mode():
                     break
                 
                 # Actuate X-Beam levveling actuator and measure
+                print("X-Beam not leveled, re-attempt leveling with actuator")
                 Output = Beam Actuator by ((NearLevel - FarLevel)/x, Probe = True)
                 
                 # Check output
@@ -1210,6 +1226,7 @@ def Leveling_Mode():
             #   exit to the 1st loop. THis is the second break that helps
             #   achieve that.
             if Error == 1:
+                print("Error w/beam actuator, handle error")
                 break
             
             # At this point, the beam should be leveled with no errors. Home, 
@@ -1233,6 +1250,8 @@ def TorqueDown(Input):
     Function outputs:
         None'''
     
+    print("Beginning to Toque Down")
+    
     # Rail Actuators constants
     DistancePerStep = .0079375 # mm linear travel per step
     
@@ -1249,17 +1268,21 @@ def TorqueDown(Input):
     PositionAboveGranite = PositionAboveGranite / DistancePerStep
     
     # 1st Layer while loop
-    while True:        
+    while True:
         # Set torque for the approach to the rails at a very low stall torque
+        print("setting stall threshold of rail actuators low")
         Board2._setStallThreshold() ISSUE test this
         
         # Turn on actuators and move twoards a position just above the rails
+        print("move rail actuator to point above rails")
         if Input == "L":
             # Turn on left actuator
+            print("    left actuator on")
             Board2.Goto(1,PositionAboveRails)
             
         elif Input == "R":
             # Turn on right actuator
+            print("    right actuator on")
             Board2.Goto(2,PositionAboveRails)
         
         # 2nd Layer while Loop
@@ -1271,6 +1294,7 @@ def TorqueDown(Input):
             if Board2.isStalled(1) == True and Input == "L":
                 # Left actuator stalled, call error and break out of while
                 #   loop for handling it
+                print("    left actuator stalled")
                 ErrRailActL.put(1)
                 error = 1
                 break
@@ -1278,12 +1302,15 @@ def TorqueDown(Input):
             elif Board2.isStalled(2) == True and Iput == "R":
                 # Right actuator stalled, call error and break out of while
                 #   loop for handling it
+                print("    right actuator stalled")
                 ErrRailActR.put(1)
                 error = 1
                 break
             
             elif ISSUE:
-                # Check for completion, exit with no error called
+                # Check for completion (Done flag false), exit with no
+                #   error called
+                print("    actuator in position above rails")
                 error = 0
                 break
         # End of the 2nd Layer while loop, back in the 1st layer
@@ -1293,15 +1320,19 @@ def TorqueDown(Input):
     #   rails and bolting down the screws
     if error == 0:
         # Set torque high
+        print("setting torque high")
         Board2._setStallThreshold() ISSUE
         
         # Set actuators on depending on input
+        print("moving rail actuator to point above granite")
         if Input == "L":
             # Turns left actuator on
+            print("    left actuator on")
             Board2.Goto(1,PositionAboveGranite)
             
         elif Input == "R":
             # Turns right actuator on
+            print("    right actuator on")
             Board2.Goto(2,PositionAboveGranite)
             
         # 2nd layer while loop checking destination and stall
@@ -1311,20 +1342,24 @@ def TorqueDown(Input):
                 # Check for completion, call error if actuator moved
                 #   to destination succesfully
                 if Input == "L":
+                    print("    left actuator reached destination, error.")
                     ErrRailActL.put(1)
                 if Input == "R":
+                    print("    right actuator reached destination, error.")
                     ErrRailActR.put(1)
                 break
             if Board2.isStalled(1) == True or Board2.isStalled(2) == True:
                 # Left or right actuator stalled, move on to next
                 #   stage (torque down)
-                
+                print("Actuator stalled, begin torque down section")
                 # Truning On solenoids based on side being done
                 if Input == "L":
                     # Left Side
+                    print("Left Solenoid On")
                     SolenoidLeft.High()
                 if Input == "R":
                     # Right Side
+                    print("Right Solenoid On")
                     SolenoidRight.High()
         
                 # Import Time so system can wait for stuff to finish
@@ -1336,15 +1371,19 @@ def TorqueDown(Input):
                 # Turn On motors depedning on side being done
                 if Input == "L":
                     # Left Side
+                    print("Left DC motor On")
                     DCMotorLeft.High()
                 if Input == "R":
                     # Right Side
+                    print("Right DC motor On")
                     DCMotorRight.High()
 
-                # Sleep for X amount of time
-                utime.sleep()
+                # Sleep for X amount of time so the DC motor torques
+                #   down the bolt.
+                utime.sleep(5000)
                 
                 # Turn screwdriver motors and solenoids off
+                print("all motors and solenoids off")
                 DCMotorLeft.low()
                 DCMotorRIght.low()
                 SolenoidLeft.low()
@@ -1356,16 +1395,18 @@ def TorqueDown(Input):
                 # home the rail actoators depedning on side being done
                 if Input == "L":
                     # Left Side
+                    print("Homing Left Actuator")
                     Home Left Actuator
                 if Input == "R":
                     # Right Side
+                    print("Homing Right Actuator")
                     Home Right Actuator
     
                 # Program done, return
                 return()
         
         # end 2nd layer, back in 1st layer
-        # Home the rail actuators
+        # Home the rail actuators in preparation for error handling.
         ISSUE
         
         # Error Handling and set mode error back
@@ -1381,15 +1422,20 @@ def Assembly_Mode():
     Function Outputs:
         None
     '''
+    
+    print("Beginning Assembly half of the assembly mode")
+    
     # Set Error Flag for mode
     ErrAssembly.put(1)
     
     # Beginning of the while loop for importing the data stored in 
     #   BoltPatternXXX.csv
     while True:
+        print("ImportBoltPattern function called")
         Output = ImportBoltPattern()
         if type(Output) == str:
             # Error Occured
+            print("Error importing Bolt Pattern csv file.")
             ErrorHandler()
             ErrAssembly.put(1)
         else:
@@ -1399,41 +1445,48 @@ def Assembly_Mode():
     
     # Store Output into variables for later use. Also assign value to offset
     #   to adjust the Bolt
+    print("Transcribing bolt pattern data to two seperate lists")
     BoltSide = Output(0)
     BoltData = Output(1)
-    
-    # Define Offset as distance from home switch to the end of the X-Beam
-    Offset = 
     
     # For loop to run through the values of BoltSide and BoltData
     for counter in range(0,len(BoltData)):
         # Nested while loop to handle moving the gantry to the target point
         while True:
             # Run Gantry to position
+            print("Moving gantry to position #"+str(counter)+": "+\
+                  str(BoltData(counter)))
             Output = Move_Gantry_to(BoltData(counter))
             
             # Check output of the function for error
             if Output == "Error Occured":
                 # Error Occured
+                print("error occured moving ganty, handling error")
                 ErrorHandler()
                 ErrAssembly.put(1)
             else:
                 # No Error Occured
+                print("Gantry successfully moved, "+str(counter)"/"+\
+                      str(len(BoltData))+" moves completed")
                 break
-            # End of while loop
+            # End of while loop, go back to for loop and repeat entire
+            #   process of moving gantry.
             
         # The gantry should be in position, press rails down and bolt them
         TorqueDown(BoltSide(counter))
-        # End of for loop
+        print("TorqueDown successfull, "+str(counter)"/"+\
+                      str(len(BoltData))+" bolts completed")
+        # End of for loop, go back to beginning unless done.
     
-    # While loop to home system minus the beam acuator
+    # While loop to home system
     while True:
         # Home function call
-        Home FUnction Call
+        Output = Home("All")
         
         # Check for error
-        if Error Occured:
+        if Output == "Error Occured":
             # Error Occured
+            print("Error occured durring the homing function, handle error")
             ErrorHandler()
             ErrAssembly.put(1)
         else:
@@ -1470,16 +1523,21 @@ def Sleep_Mode(Input):
     # Pre-Sleep mode: Wait in while loop for one of two exit conditions.
     #   1) User hits go
     #   2) User changes the system mode to something that isn't the sleep mode
+    print("Sleep mode pre-stage")
     Timer = 0                   # Creating a timer variable
     Start = utime.ticks_ms()    # Creating a starting reference time
     while True:
         if Timer > 10*60*1000: # 10 min * 60s/min * 1000ms/s
+            print("Timed Out, going to sleep")
             break
         elif Go() == 1:
+            print("Go pressed, going to sleep")
             break
         elif Mode() != 2:
+            print("Another mode selected, exiting function")
             return(1000)
         # increment Timer
+        print("Time in Sleep pre-stage: "+str(Timer)+" ms")
         Current = utime.ticks_ms()
         Timer = Current - Start + Timer
         Start = Current
@@ -1491,10 +1549,12 @@ def Sleep_Mode(Input):
     # Ammendment, if the system spend 500ms or more in the while loop checking
     #   the Mode() function, then the system homes. Otherwise, if it spent less
     #   than that, it doesnt run the Home() function.
-    if Input >= 500 or Timer > 10*60*1000:
+    if Input >= 500:
         Lights_Sound_Off()
         YellowLED.High()
         while True:
+            print("Time spend in main checking Mode() >500ms")
+            
             # If the system enters sleep mode, Home
             Output =  Home("All")
             
@@ -1502,6 +1562,7 @@ def Sleep_Mode(Input):
             if type(Output) == str:
                 # If error, do the whole error handeler and when user hits go
                 #   2nd time, repeat (ie home again)
+                print("Error Homing, handle error")
                 ErrorHandler()
                 ErrSleep.put(1)
             elif type(Output) != str:
@@ -1518,6 +1579,7 @@ def Sleep_Mode(Input):
     
     # Enter while loop and wait for user to change the mode before exiting the
     #   function
+    print("Everything is done, goin to sleep.")
     while True:
         if Mode() != 2:
             # User has selected another mode, set flag, calculate time one last
@@ -1526,15 +1588,19 @@ def Sleep_Mode(Input):
             ErrSleep.put(0)
             Current = utime.ticks_ms()
             Timer = Timer + Current-Start
+            print("User has changed the mode, waking up")
             return(Timer)
-        elif Mode() == 2:
+        elif Mode() == 2 and Timer < 600:
             # User has not selected another mode, increment the timer and sleep
-            #   for 500ms minus how long it took to do get the current time
+            #   for 500ms minus how long it took to do get the current time.
+            #   Also, if Timer > 600ms, the Timer will stop incrementing to
+            #   prevent possible issues.
             Current = utime.ticks_ms()
             Timer = Timer + Current-Start
             if 500-(Current-Start) >= 0:
                 utime.sleep_ms(500-(Current-Start))
             Start = Current
+            print("shh, i've been asleep for "+str(Timer)+" ms")
     
 #//////////////////////////////////////////////////////////////////////////////
 '''                              Main Program                               '''
@@ -1545,26 +1611,33 @@ Output = FileCheck()
 # Check Output of function FileCheck() for an error in the shape of a string
 if type(Output)==str:
     # If there was an error, handle it
+    print("error with files, handling error")
     ErrorHandler()
     
     # If there was an error and the user hit the go twice, do a soft reset,
     #   restarting the program from the beginning.
+    print("SOFT RESET!!!!")
     import sys
     sys.exit()
     
 # If there was no error, create all items
-
+print("creating items")
 # Pin Definition
 import pyb
 
+# Notable stepper driver pins
+# Busy pin goes high when motor stops
+Busy_Pin = pyb.Pin (pyb.Pin.cpu.C0, mode = pyb.Pin.OUT_PP, 
+                      pull = pyb.Pin.PULL_DOWN)
+
 # LED Pin Definition
-RedLED = pyb.Pin (pyb.Pin.cpu.C0, mode = pyb.Pin.OUT_PP, 
+RedLED = pyb.Pin (pyb.Pin.cpu., mode = pyb.Pin.OUT_PP, 
                       pull = pyb.Pin.PULL_DOWN)
 
 YellowLED = pyb.Pin (pyb.Pin.cpu.C2, mode = pyb.Pin.OUT_PP, 
                          pull = pyb.Pin.PULL_DOWN)
 
-GreenLED = pyb.Pin (pyb.Pin.cpu.A5, mode = pyb.Pin.OUT_PP, 
+GreenLED = pyb.Pin (pyb.Pin.cpu., mode = pyb.Pin.OUT_PP, 
                         pull = pyb.Pin.PULL_DOWN)
 
 # Piezzo Buzzer
@@ -1683,6 +1756,8 @@ Board2 = l6470nucleo.Dual6470(2,ncs2,SCK) # Controls Left (1) and Right
 
 import task_share
 # Variable Buffer Creation
+print("Buffer object creation")
+
 ErrInit = task_share.Share ('i', thread_protect = False,
                             name = "Initilization Error Flag")
 ErrSleep = task_share.Share ('i', thread_protect = False,
@@ -1729,6 +1804,7 @@ ErrInit.put(1)
 #   homes the first time round.
 Timer = 600
 
+print("Beginning main program")
 # 1st Layer while loop
 while True:
     # Check Timer
@@ -1740,11 +1816,13 @@ while True:
         # home loop
         while True:
             # If Timer >= 5 sec, 
+            print("Homing everything...")
             Output = Home('All')
             
             # Check Output of function for error
             if Output == "Error Occured":
                 # Error, do stuff
+                print("Error homing, handle it")
                 ErrorHandler()
             else:
                 # No error, break this 'home loop' and exit back to the 1st
@@ -1761,13 +1839,15 @@ while True:
         Lights_Sound_Off()
         GreenLED.High()
 
-        # 2nd Layer While Loop
+        print("Checking mode")
+        # 2nd Layer While Loop to check mode
         while True:
+            
             # Check mode by calling a function which checks the three position
             #   switch
             if Mode() == 1:
                 # If switch is in 1st position...
-                
+                print("Mode 1: Calibration Mode selected")
                 # Run Calibration Mode
                 Calibration_Mode()
                 
@@ -1780,7 +1860,15 @@ while True:
                 
             if Mode() == 2:
                 # If switch is in 2nd position...
+                print("Mode 2: Sleep Mode selected")
+                Timer = Sleep_Mode()
                 
+                # break out of 2nd layer back to 1st layer
+                break
+            
+            if Mode() == 3:
+                # If switch is in 3rd position...
+                print("Mode 3: Assembly Mode selected")
                 # Run Leveling Mode
                 Leveling_Mode()
                 
@@ -1794,16 +1882,10 @@ while True:
                 # break out of 2nd layer back to 1st layer
                 break
                 
-            if Mode() == 3:
-                # If switch is in 3rd position...
-                Timer = Sleep_Mode()
-                
-                # break out of 2nd layer back to 1st layer
-                break
-            
-            # Increment Timer
+            # Increment Timer if no mode is selected
             Current = utime.ticks_ms()
             Timer = (Current - Start) + Timer
+            print("Nothing selected?")
             
             # End of the 2nd Layer
         
