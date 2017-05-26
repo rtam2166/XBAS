@@ -188,19 +188,19 @@ def ImportBoltPattern():
     try:
         '''Attempt to import the BoltPattern file indicated by the input.'''
         with open(FileName,'r') as file:
-           '''File does exist, process the data as indicated'''
-           i = 1
-           print("File Opened, splitting values into two seperate lists")
-           for line in file:
-               line = line.split(',')
-               line[-1] = (line[-1].replace("\n",''))
-               line[-1] = (line[-1].replace("\r",''))
-               if i == 1:
-                   BoltSide = line
-               elif i == 2:
-                   BoltData = line
-               print("Line "+str(i)+" processed")
-               i = i+1
+            '''File does exist, process the data as indicated'''
+            i = 1
+            print("File Opened, splitting values into two seperate lists")
+            for line in file:
+                line = line.split(',')
+                line[-1] = (line[-1].replace("\n",''))
+                line[-1] = (line[-1].replace("\r",''))
+                if i == 1:
+                    BoltSide = line
+                elif i == 2:
+                    BoltData = line
+                print("Line "+str(i)+" processed")
+                i = i+1
                
     except FileNotFoundError:
         '''File doesn't exist, write to Error Report'''
@@ -292,42 +292,42 @@ def ImportCalibration():
     try:
         '''Attempt to import the Calibration file indicated by the input.'''
         with open(FileName,'r') as file:
-           '''File does exist, process the data as indicated'''
-           print("File Opened, processing data and checking items")
-           for line in file:
-              String = str(line)              # Bring in line of info from csv
-                                              #    file
-              List = String.split(',')      # Split line of info at the comma
-              String = []
-              i = 0
-              for item in List:
-                  '''Go through each item in List of info and try to make each
-                  item a float. If not, return an error message indicating
-                  which item was invalid.'''
-                  try:
-                      '''Try to turn the item into a float'''
-                      List[i] = float(item)
-                      print("Item "+str(i)+" checked and is valid")
+            '''File does exist, process the data as indicated'''
+            print("File Opened, processing data and checking items")
+            for line in file:
+                String = str(line)              # Bring in line of info from csv
+                                                #    file
+                List = String.split(',')      # Split line of info at the comma
+                String = []
+                i = 0
+                for item in List:
+                    '''Go through each item in List of info and try to make each
+                    item a float. If not, return an error message indicating
+                    which item was invalid.'''
+                    try:
+                        '''Try to turn the item into a float'''
+                        List[i] = float(item)
+                        print("Item "+str(i)+" checked and is valid")
                       
-                  except ValueError:
-                      '''Error indicating invalid input'''
-                      String.append("Error in "+FileName+" Line "+str(i+1)+
-                                    ": '"+item+"' is not a valid input")
-                      ErrCalCsv.put(1)
-                      print("Error in "+FileName+" Line "+str(i+1)+
-                                    ": '"+item+"' is not a valid input")
-                      error = 1
+                    except ValueError:
+                        '''Error indicating invalid input'''
+                        String.append("Error in "+FileName+" Line "+str(i+1)+
+                                      ": '"+item+"' is not a valid input")
+                        ErrCalCsv.put(1)
+                        print("Error in "+FileName+" Line "+str(i+1)+
+                                      ": '"+item+"' is not a valid input")
+                        error = 1
                       
-                  except TypeError:
-                      '''Error indicating invalid input'''
-                      String.append("Error in "+FileName+" Line "+str(i+1)+
-                                    ": '"+item+"' is not a valid input")
-                      ErrCalCsv.put(1)
-                      print("Error in "+FileName+" Line "+str(i+1)+
-                                    ": '"+item+"' is not a valid input")
-                      error = 1
+                    except TypeError:
+                        '''Error indicating invalid input'''
+                        String.append("Error in "+FileName+" Line "+str(i+1)+
+                                      ": '"+item+"' is not a valid input")
+                        ErrCalCsv.put(1)
+                        print("Error in "+FileName+" Line "+str(i+1)+
+                                      ": '"+item+"' is not a valid input")
+                        error = 1
                   
-                  i = i+1
+                    i = i+1
               
     except FileNotFoundError:
         '''Exception to report that the file is missing'''
@@ -669,10 +669,10 @@ def Move_Gantry_To(Destination, probe = False):
     
     # Wait for stall or finish flag
     while True:
-        if finish() == 1:
+        if Busy_Pin.value() == 1:
              # if finish, exit the function
             return("Done")
-        elif stall() == 1:
+        elif Board1.isStalled(1) == True:
             # if stall, stop gantry, throw error and return
             ErrGantry.put(1)
             return("Error Occured")
@@ -1307,7 +1307,7 @@ def TorqueDown(Input):
                 error = 1
                 break
             
-            elif ISSUE:
+            elif Busy_Pin.value() == 1:
                 # Check for completion (Done flag false), exit with no
                 #   error called
                 print("    actuator in position above rails")
@@ -1338,7 +1338,7 @@ def TorqueDown(Input):
         # 2nd layer while loop checking destination and stall
         #   flags as before.
         while True:  
-            if ISSUE:
+            if Busy_Pin.value() == 1:
                 # Check for completion, call error if actuator moved
                 #   to destination succesfully
                 if Input == "L":
@@ -1407,7 +1407,7 @@ def TorqueDown(Input):
         
         # end 2nd layer, back in 1st layer
         # Home the rail actuators in preparation for error handling.
-        ISSUE
+        Home("RailAct")
         
         # Error Handling and set mode error back
         ErrorHandler()
