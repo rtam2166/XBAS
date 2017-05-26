@@ -117,7 +117,7 @@ def FileCheck():
                         '\n\r')
                 Switch = 1
             f.write("The file "+file+" is missing\n\r")
-            print("The file "+file+" is missing)
+            print("The file "+file+" is missing")
             
             # If special action is required for a file, add an if statement
             #   here which checks for said file to write that specific
