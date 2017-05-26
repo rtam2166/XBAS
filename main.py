@@ -493,7 +493,8 @@ def ErrorHandler():
     '''This function checks flags, prints errors, sets lights, and makes noise
     accordingly.
     '''
-                  
+    
+    # print statements for debugging purposes
     print("Beginning Error Handling")
     print("ErrInit =     "+str(ErrInit.get()))
     print("ErrSleep =    "+str(ErrSleep.get()))
@@ -505,6 +506,7 @@ def ErrorHandler():
     print("ErrBeamAct =  "+str(ErrBeamAct.get()))
     print("ErrRailActR = "+str(ErrRailActR.get()))
     print("ErrRailActL = "+str(ErrRailActL.get()))
+                  
     # There was no issues with all of the named error flags, check all of the
     #   other error flags
     if ErrFileCheck.get() == 0 and  \
@@ -794,6 +796,9 @@ def Calibration_Mode():
     Function Outputs:
         None
     '''
+                  
+    print("Beginning Calibration Mode")
+                  
     # Variable switch is used to identify if this is the first time running
     #   through this program or not.
     switch = 0
@@ -835,12 +840,14 @@ def Calibration_Mode():
                     break
             
             # Home Machine
-            Home("All")
+            Output = Home("All")
             
             # Error Check
-            lala
+            if Output == "Error Occured":
+                  break
             
             if switch == 0:
+                print("Waiting in pre-Calibration Stage")
                 # The calibration mode is ready to go, turn green light on and
                 #   wait for go.
                 Lights_Sound_Off()
@@ -853,9 +860,11 @@ def Calibration_Mode():
                                             #   system is working now
                         break               # Exit the 3rd layer and resume in 
                                             #   2nd layer
+                        print("Go selected, continuing function")
                     elif Mode() != 1:
                         # User has selected a different mode before hitting go,
                         #   exit the function
+                        print("Another Mode selected, exiting function")
                         return()
             
             # User has hit go, import files. Will error if the file is missing
@@ -882,11 +891,13 @@ def Calibration_Mode():
             #   to named variables for ease of use. Note, Offset adjusts the
             #   distance NearSide and FarSide so they are from the end of the
             #   X-Beam
+            print("Transcribing calibration data over to local variables")
             CalibrationData = Output
             NearSide = Output(0)
             FarSide = Output(1)
             
             # Move Gantry to the near side
+            print("Moving Gantry to the near side for calibration purposes")
             Output = Move_Gantry_To(NearSide, probe = False)
             
             # Check output for if an error occured. If no error occured, the
@@ -894,37 +905,48 @@ def Calibration_Mode():
             #   measurement.
             if Output == "Error Occured":
                 # An error did occur, break back to 1st layer
+                print("Error occured moving gantry, do error handling")
                 break
                 
             # Gantry is in position, check the "block" variable for if the
             #   machine needs to wait for user input or not
             if block == 1:
+                print("Waiting for user input to do measurement")
                 Lights_Sound_Off()
                 GrennLED.High()
                 while True:
                     # Sit in a while loop until the user hits Go()
                     if Go()=1:
+                        print("Go pressed, taking measurement")
                         Lights_Sound_Off()
                         YellowLED.High()
                         break
+            elif block == 2:
+                  print("Bypassing user input, taking measurement.
+                        
             # XBAS now needs to take measurement
             Output = probe()
             
             # Check Output for error from probe()
             if Output == "Error Occured":
+                print("Probe measurement error, do error handling")
                 # Error Occured, exit 2nd layer to 1st layer for error handling.
                 break
             
             # Store the data of the near side to the calibration data
             CalibrationData[2] = Output
+            print("Substituting probe measurement into CalibrationData, value "+\
+                 str(Output))
             
             # Calue of NearSide has been stored, now for FarSide
+            print("Moving Gantry to the Farside for Calibration Purpose")
             Output = Move_Gantry_To(FarSide, probe = False)
             
             # Check output for if an error occured. If no error occured, the
             #   function should have returned a number indicating the
             #   measurement.
             if Output == "Error Occured":
+                print("Gantry moving error, do error handling")
                 # An error did occur, handle error and break back to 1st layer
                 ErrorHandler()
                 break
@@ -932,28 +954,38 @@ def Calibration_Mode():
             # Gantry is in position, check the "block" variable for if the
             #   machine needs to wait for user input or not
             if block == 1:
+                print("Waiting for user input to do measurement")
                 Lights_Sound_Off()
                 GrennLED.High()
                 while True:
                     # Sit in a while loop until the user hits Go()
                     if Go()=1:
+                        print("Go pressed, taking measurement")
                         Lights_Sound_Off()
                         YellowLED.High()
                         break
+                elif block == 2:
+                  print("Bypassing user input, taking measurement.
+
             # XBAS now needs to take measurement
             Output = probe()
-            
+
             # Check Output for error from probe()
             if Output == "Error Occured":
                 # Error Occured, exit 2nd layer to 1st layer for error handling.
+                print("Probe error occured, handle error")
                 break
-                
+
             # Store the data of the far side to the calibration data
+            print("Substituting probe measurement into CalibrationData, value "+\
+                 str(Output))
             CalibrationData[3] = Output
             
             # Calculate the difference between the level of the two points for 
             #   the calibration constant
             CalibrationData[4] = CalibrationData[3]-CalibrationData[2]
+            print("Calculating and storing calibration constant, value "+\
+                  str(CalibrationData[4]))
                     
             # At this point, there should have been no errors or such, so 
             #   finish up by storing information into the Calibration file for
@@ -961,14 +993,17 @@ def Calibration_Mode():
             #   machine is done.
             Input = XBeam.get()
             FileName = "Calibration"+str(Input)+".csv"
+            print("Writing CalibrationData to "+FileName)
             f = open(FileName,'w')
             String = ''
             for item in CalibrationData:
                 String = String + str(item) + ','
             String = String.rstrip(',')
+            print("    writing line: "+String)
             f.write(String)
             
             # Home the Gantry
+            print("Homing Gantry")
             Home("Gantry")
             
             # Zero flags and indicate that the system finished whatever the 
@@ -977,6 +1012,7 @@ def Calibration_Mode():
             Lights_Sound_Action()
             
             # Exit Function
+            print("Calibration Done, exiting function")
             return('Done')
         # End of 2nd Layer loop
     
@@ -1164,82 +1200,8 @@ def Leveling_Mode():
         # End of the 2nd Layer
         
     ErrorHandler()
-    # End of the First Layrr
-    
-def Assembly_Mode():
-    '''Function that runs after the beam is leveled to force rails into 
-    position and torque them down.
-    Function Inputs:
-        None
-    Function Outputs:
-        None
-    '''
-    # Set Error Flag for mode
-    ErrAssembly.put(1)
-    
-    # Beginning of the while loop for importing the data stored in 
-    #   BoltPatternXXX.csv
-    while True:
-        Output = ImportBoltPattern()
-        if type(Output) == str:
-            # Error Occured
-            ErrorHandler()
-            ErrAssembly.put(1)
-        else:
-            # No Error Occured
-            break
-        # End of while loop
-    
-    # Store Output into variables for later use. Also assign value to offset
-    #   to adjust the Bolt
-    BoltSide = Output(0)
-    BoltData = Output(1)
-    
-    # Define Offset as distance from home switch to the end of the X-Beam
-    Offset = 
-    
-    # For loop to run through the values of BoltSide and BoltData
-    for counter in range(0,len(BoltData)):
-        # Nested while loop to handle moving the gantry to the target point
-        while True:
-            # Run Gantry to position
-            Output = Move_Gantry_to(BoltData(counter))
-            
-            # Check output of the function for error
-            if Output == "Error Occured":
-                # Error Occured
-                ErrorHandler()
-                ErrAssembly.put(1)
-            else:
-                # No Error Occured
-                break
-            # End of while loop
-            
-        # The gantry should be in position, press rails down and bolt them
-        TorqueDown(BoltSide(counter))
-        # End of for loop
-    
-    # While loop to home system minus the beam acuator
-    while True:
-        # Home function call
-        Home FUnction Call
-        
-        # Check for error
-        if Error Occured:
-            # Error Occured
-            ErrorHandler()
-            ErrAssembly.put(1)
-        else:
-            # No Error Occured
-            break
-        # End of while loop
-        
-    # Zero Flags, indicate the system is done via Lights_Sound_Action(), and
-    #   retrun
-    zero_flags()
-    Lights_Sound_Action()
-    retrun()
-    
+    # End of the First Layer
+                        
 def TorqueDown(Input):
     '''Function Torques down the side indicated by the input
     Function inputs:
@@ -1386,7 +1348,81 @@ def TorqueDown(Input):
         # Error Handling and set mode error back
         ErrorHandler()
         ErrAssembly.put(1)
-        # End of 1st layer, resume at beginning
+        # End of 1st layer, resume at beginning 
+
+def Assembly_Mode():
+    '''Function that runs after the beam is leveled to force rails into 
+    position and torque them down.
+    Function Inputs:
+        None
+    Function Outputs:
+        None
+    '''
+    # Set Error Flag for mode
+    ErrAssembly.put(1)
+    
+    # Beginning of the while loop for importing the data stored in 
+    #   BoltPatternXXX.csv
+    while True:
+        Output = ImportBoltPattern()
+        if type(Output) == str:
+            # Error Occured
+            ErrorHandler()
+            ErrAssembly.put(1)
+        else:
+            # No Error Occured
+            break
+        # End of while loop
+    
+    # Store Output into variables for later use. Also assign value to offset
+    #   to adjust the Bolt
+    BoltSide = Output(0)
+    BoltData = Output(1)
+    
+    # Define Offset as distance from home switch to the end of the X-Beam
+    Offset = 
+    
+    # For loop to run through the values of BoltSide and BoltData
+    for counter in range(0,len(BoltData)):
+        # Nested while loop to handle moving the gantry to the target point
+        while True:
+            # Run Gantry to position
+            Output = Move_Gantry_to(BoltData(counter))
+            
+            # Check output of the function for error
+            if Output == "Error Occured":
+                # Error Occured
+                ErrorHandler()
+                ErrAssembly.put(1)
+            else:
+                # No Error Occured
+                break
+            # End of while loop
+            
+        # The gantry should be in position, press rails down and bolt them
+        TorqueDown(BoltSide(counter))
+        # End of for loop
+    
+    # While loop to home system minus the beam acuator
+    while True:
+        # Home function call
+        Home FUnction Call
+        
+        # Check for error
+        if Error Occured:
+            # Error Occured
+            ErrorHandler()
+            ErrAssembly.put(1)
+        else:
+            # No Error Occured
+            break
+        # End of while loop
+        
+    # Zero Flags, indicate the system is done via Lights_Sound_Action(), and
+    #   retrun
+    zero_flags()
+    Lights_Sound_Action()
+    retrun()
     
 def Sleep_Mode(Input):
     '''This is the sleeping mode for the machine. It homes the machine and goes
