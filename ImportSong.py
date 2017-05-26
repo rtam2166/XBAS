@@ -6,11 +6,13 @@ Created on Mon Apr  3 13:16:28 2017
 """
 
 def ImportSong():
-    '''This function checks the piano board's last four switches (the pins
-    called Note1 to Note4) and converts those four binary inputs into an
+    '''This function checks the piano board's five switches (the pins
+    called Note0 to Note4) and converts those four binary inputs into an
     integer. With four switches available, the range of corresponding integer
-    inputs should be 0 to 15 (1-16 if you add 1 to the final number)'''
+    inputs should be 0 to 15 (1-16 if you add 1 to the final number) switches
+    are numbered from left to right'''
     
+    print("Importing Song/Piano Board Pattern")
     from main import Note0
     from main import Note1
     from main import Note2
@@ -44,6 +46,9 @@ def ImportSong():
         
     # Calculating a binary number from four binary input
     Number = (a*2**4 + b*2**3 + c*2**2 + d*2**1 + e*2**0) + 1
+    
+    print("Read Combination: "+str(a)+str(b)+str(c)+str(d)+str(e)+\
+          " = "+str(Number))
         
     # If the user has selected the combination of switches which correspond
     #   to 1-16, than input the X-Beam length into the buffer XBeam that 
@@ -101,10 +106,12 @@ def ImportSong():
     #   statements.
         
     if ErrSong.get() == 0:
+        print("X-Beam "+str(Length)+" selected")
         XBeam.put(Length)
         return("No Error")
         
     elif ErrSong.get() == 1:
+        print("Selected Combination has no assotiated Length value")
         f = open("Error Report.txt","w")
         f.write('''An error occured during the initilization phase\n\r
                 The switch combination of the piano switch board does not correspond to any of\n\r
