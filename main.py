@@ -965,7 +965,7 @@ def Calibration_Mode():
                         YellowLED.High()
                         break
                 elif block == 2:
-                  print("Bypassing user input, taking measurement.
+                  print("Bypassing user input, taking measurement.")
 
             # XBAS now needs to take measurement
             Output = probe()
