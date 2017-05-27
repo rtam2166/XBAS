@@ -886,7 +886,7 @@ def Home(*arg):
                 Board1.HardHiZ(2)
                 print("        Beam Actuator Stalled during Home command")
                 print("        ERROR ERROR ERROR, return error")
-                ErrGantry.put(2)
+                ErrBeamAct.put(1)
                 return("Error Occured")
 
         # Release switch for beam actuator
@@ -902,7 +902,7 @@ def Home(*arg):
                 Board1.HardHiZ(2)
                 print("        Beam Actuator Stalled during Home command")
                 print("        ERROR ERROR ERROR, return error")
-                ErrGantry.put(2)
+                ErrBeamAct.put(1)
                 return("Error Occured")
         
 def Calibration_Mode():
