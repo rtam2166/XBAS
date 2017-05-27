@@ -904,6 +904,9 @@ def Home(*arg):
                 print("        ERROR ERROR ERROR, return error")
                 ErrBeamAct.put(1)
                 return("Error Occured")
+                
+    # No other objects to home, exit funciton
+    return("Done")
         
 def Calibration_Mode():
     '''This function directs the XBAS machine to calibrate a machine csv file
