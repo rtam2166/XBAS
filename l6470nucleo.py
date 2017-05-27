@@ -18,7 +18,7 @@ from math import ceil as math_ceil
 
 
 ## Maximum speed for the motor; default 65, or ~992 steps/s
-MAX_SPEED = const (28)
+MAX_SPEED = const (40)
 
 ## Acceleration for the motor; default 138, or 2008 steps/s^2
 ACCEL = const (12)
@@ -27,7 +27,7 @@ ACCEL = const (12)
 DECEL = const (12)
 
 ## The K_val constant for registers 0x09, 0x0A, 0x0B, 0x0C; default 0x29 = 41
-K_VAL = const (40)   # Calculated 200??
+K_VAL = const (80)   # Calculated 200??
 
 ## Intersection speed for register 0x0D; default 0x0408 = 1032
 INT_SPEED = const (3141)
@@ -39,7 +39,7 @@ ST_SLP = const (264)
 FN_SLP = const (397)
 
 ## Number of Microsteps, num which are powers of 2 up to 128 are acceptable.
-STEP_SEL = const (4)
+STEP_SEL = const (8)
 
 ## Define SYNC_ENable bitmask. 0x80 for High, 0x00 for Low
 SYNC_EN = const(0x00)   
