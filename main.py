@@ -588,7 +588,8 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
             returns message "Error Occured" if the reading is outside the
             given limits.
             '''
-    print("Lowering probe")
+    print("Taking measurement with probe")
+    print("    Lowering probe")
     MoveProbe("Down")
     
     tolerance = 0
@@ -597,36 +598,38 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
         # wait for readings from probe to change (delta) by the tolerance amount
         current = ProbeEncoder.read()
         delta = current-previous
-        print("    delta = "+str(delta))
+        print("        delta = "+str(delta))
         if delta <= tolerance or delta >= -tolerance:
+            print(
             break
         
     
     # Check Reading is within the limits if the Limit flag is true
     if Limit = True
         if Reading > UpperLimit:
-            print("probe reading was above upper limit of readings")
+            print("    probe reading was above upper limit of readings")
             ErrProbe.put(1)
         elif Reading < LowerLimit:
-            print("probe reading was below lower limit of readings")
+            print("    probe reading was below lower limit of readings")
             ErrProbe.put(1)
 
-    print("Raising probe")
+    print("    Raising probe")
     MoveProbe("Up")
     
     while True:
         # wait until the probe has fully withdrawn to the reference tick.
         if ProbeReference.value() == 1:
+            print("    Reference tick reached")
             break
     
     # If there was or was not an error
     if ErrProbe.get() == 0:
-        print("No error, exit")
+        print("    No error, exit")
         # No error, return
         return(Reading)
     else:
         # Error, return error message
-        print("Error Error Error Error")
+        print("    Error Error Error Error")
         return("Error Occured")
         
 def Move_Gantry_To(Destination, probe = False):
@@ -660,49 +663,74 @@ def Move_Gantry_To(Destination, probe = False):
                         #   width
     ISSUE See above 2 variables
     
-    # Check that Destination is not outside of the 
+    print("Moving Gantry to position x: "+str(Destination))
+    print("    Probe at the end of the move? "+str(probe))
+    # Check that Destination is not outside of the limits
     if Destination <= -xOffset:
-         return("Error Occured")
+        # If the destination is less than -xOffset, then the destination is 
+        #   behind the home position which would push the system against the 
+        #   housing and possible break the switch.
+        print("    Error Occured moving the Gantry, Destination behind home")
+        ErrGantry.put(1)
+        return("Error Occured")
     elif Destination  >= xLimit:
-         return("Error Occured")
+        # If the destination is greater than the xLimit, the gantry is running
+        #   the risk of crashing against the leadscrew bearing end support
+        #   raiser.
+        print("    Error Occured moving the Gantry")
+        ErrGantry.put(1)
+        return("Error Occured")
+    print('''    Destination of Gantry within limits, Destination past'''+\
+          '''farthest position''')
     
     # Convert Destination in mm to revolutions to steps
     Destination = ((Destination + xOffset)/DistancePerRev)*StepsPerRev
+    print("    Destination converted to "+str(Destination)+" number of steps")
     
     # Move to the new value of Destination
+    print("    Moving Gantry to Destination")
     Board1.GoTo(1,Destination)
     
     # Wait for stall or finish flag
+    print("    waiting for stall or completion of move command")
     while True:
         if Busy_Pin.value() == 1:
-             # if finish, exit the function
-            return("Done")
+            # if finish, exit the function
+            print("    Gantry in position, exit loop")
+            break
         elif Board1.isStalled(1) == True:
             # if stall, stop gantry, throw error and return
+            print('''    Error Occured moving the Gantry to position. '''+\
+                 "Gantry stalled out")
             ErrGantry.put(1)
             return("Error Occured")
     
     # If done moving gantry and probe option is true, take measurement
     if probe == True:
+        print("    Probe part of Move_Gantry_to() function called")
         # check the error flags to determine what mode the machine is in.
         #   if it is in calibration, then the probe does not need limits on
         #   its measurement. If it is leveling, then it does.
         if ErrCal.get() == 1:
+            print("    Probe called for Calibration Mode")
             reading = Probe()
         elif ErrAssembly.get() == 1 or ErrLeveling.get() == 1:
-            UpprLimit = 
-            LwrLimit = 
+            print("    Probe called for Leveling and Assembly Mode")
+            UpprLimit = ISSUE
+            LwrLimit = ISSUE
             reading = Probe(Limit = True, UpperLimit = UpprLimit,LowerLimit = LwrLimit)
 
         if type(reading) == "Error Occured":
             # Error occured, but should have been solved as the Probe function
             #   shouldn't be able to finish if there was an error.
+            print("    Error occured with probe in the Move_Gantry_to()")
             return("Error Occured")
-            pass
         else:
+            print("    No error occured with probe in the Move_Gantry_to()")
             return(reading)
     # Else if the gantry is done moving and probe option in false, return
     elif probe == False:
+        print("    Probe part of Move_Gantry_to() function not called")
         return("Done")
 
 def Home(*arg):
@@ -722,18 +750,27 @@ def Home(*arg):
     Outputs:
         None'''
     
+    print("Beginning to Home system")
     # Import time for all the sleep commands we will do
     import utime
+                
+    # Set the stall thresholds of the stepper drivers to the maximum
+    #   ammount (which they should be already)
+    Board1._setStallThreshold(16)
+    Board2._setStallThreshold(16)
     
     # First Home Probe if Probe or all is listed in *arg
     if ('Probe' in arg) or ('All' in arg):
+        print("    Homing the Probe")
         # If the probe registers at home, do nothing. If not, retract probe
         #   is at home
         if ProbeReference.value == 1:
             # True, do nothing
+            print("        Probe is at reference tick, go to next object")
             pass
         else:
             # False, Retract Probe until it is at the reference tick
+            print("        Probe is not at reference tick, raise probe")
             MoveProbe("Up")
             
             # While loop to check the probe for when its reaches reference
@@ -741,40 +778,54 @@ def Home(*arg):
             while True:
                 if ProbeReference.value == 1:
                     # True
+                    print("        Probe is at reference tick, go to next object")
                     break
             
     # Now Home Righ and Left rail actuator
+    print("    Homing one or both rail actuators")
     if ('RailActR' in arg) or ('All' in arg) or ('RailAct' in arg):
         # Home right actuator. Speed is up for debate
+        print("        Homing the right rail actuator")
         Board2.GoUntil(2,-400)
+                
     if ('RailActL' in arg) or ('All' in arg) or ('RailAct' in arg):
         # Home left actuator
+        print("        Homing the left rail actuator")
         Board2.GoUntil(1,-400)
+                
     if ('RailActR' in arg) or ('RailActL' in arg) or ('All' in arg) or \
         ('RailAct' in arg):
+        print("        checking rail actuators for completion of move")
+                
         # Check home status in while loop
         while True:
             if Busy_Pin.value() == 1:
-                # Both rail actuators are homed, continue.
+                # Both rail actuators are @ their switches, continue.
+                print("        actuator switches have been pressed, busy pin high")
                 break
     
-        # Rail Actuators are home, release switch to back them off of
-        #   switch and back on.
+        # Rail Actuator @ swithces, release switch to back them off of
+        #   switch which is their homed position.
         if ('RailActR' in arg) or ('All' in arg) or ('RailAct' in arg):
             # Release Switch Right
+            print("        releasing right switch")
             Board2.ReleaseSW(2,1)
+                
         if ('RailActL' in arg) or ('All' in arg) or ('RailAct' in arg):
             # Home left actuator
+            print("        releasing left switch")
             Board2.ReleaseSW(1,1)
         
         # Check status via while loop
         while True:
             if Busy_Pin.value() == 1:
+                print("        actuator switches have been pressed, busy pin high")
                 break
             
     # Home screwdriver DC Motors and Solenoids
     if ('Screwdrivers' in arg) or ('All' in arg):
         # Turn of both DC motors and solenoids
+        print("    Turning off all DC motors and Solenoids for srewdrivers")
         DCMotorRight("Off")
         DCMotorLeft("Off")
         SolenoidRight("Off")
@@ -782,26 +833,46 @@ def Home(*arg):
         
     # Home Gantry
     if ('Gantry' in arg) or ('All' in arg):
+        print("    Homing Gantry")
         # Home Gantry Code. +/- 400 is the max speed of the gantry
+        print("        Gantry GoUntil switch command")
         Board1.GoUntil(1,-400)
         
         # Check home status in while loop
         while True:
             if Busy_Pin.value() == 1:
-                # Both rail actuators are homed, continue.
+                # gantry at switch, continue.
+                print("        Gantry completed GoUntil Command")
                 break
+            elif Board1.isStalled(1) == True:
+                # motor stalled, return an error and set flag
+                Board1.HardHiZ(1)
+                print("        Gantry Stalled during Home command")
+                print("        ERROR ERROR ERROR, return error")
+                ErrGantry.put(1)
+                return("Error Occured")
 
         # Release switch for gantry
+        print("        releasing switch for gantry")
         Board1.ReleaseSW(1,1)
 
         # Check home status in while loop
         while True:
             if Busy_Pin.value() == 1:
                 # Both rail actuators are homed, continue.
+                print("        Gantry completed ReleaseSW Command")
                 break
+            elif Board1.isStalled(1) == True:
+                # motor stalled, return an error and set flag
+                Board1.HardHiZ(1)
+                print("        Gantry Stalled during Home command")
+                print("        ERROR ERROR ERROR, return error")
+                ErrGantry.put(1)
+                return("Error Occured")
         
     # Home Beam Actuator
     if ('Bact' in arg) or ('All' in arg):
+        print("    Homing Beam Actuator")
         # Home beam actuator Code.
         Board1.GoUntil(2,-400)
         
@@ -810,6 +881,13 @@ def Home(*arg):
             if Busy_Pin.value() == 1:
                 # Both rail actuators are homed, continue.
                 break
+            elif Board1.isStalled(2) == True:
+                # motor stalled, return an error and set flag
+                Board1.HardHiZ(2)
+                print("        Beam Actuator Stalled during Home command")
+                print("        ERROR ERROR ERROR, return error")
+                ErrGantry.put(2)
+                return("Error Occured")
 
         # Release switch for beam actuator
         Board1.ReleaseSW(2,1)
@@ -819,6 +897,13 @@ def Home(*arg):
             if Busy_Pin.value() == 1:
                 # Both rail actuators are homed, continue.
                 break
+            elif Board1.isStalled(2) == True:
+                # motor stalled, return an error and set flag
+                Board1.HardHiZ(2)
+                print("        Beam Actuator Stalled during Home command")
+                print("        ERROR ERROR ERROR, return error")
+                ErrGantry.put(2)
+                return("Error Occured")
         
 def Calibration_Mode():
     '''This function directs the XBAS machine to calibrate a machine csv file
