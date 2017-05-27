@@ -698,7 +698,7 @@ def Move_Gantry_To(Destination, probe = False):
             # if finish, exit the function
             print("    Gantry in position, exit loop")
             break
-        elif Board1.isStalled(1) == True:
+        elif Board1.isStalled(2) == True:
             # if stall, stop gantry, throw error and return
             print('''    Error Occured moving the Gantry to position. '''+\
                  "Gantry stalled out")
@@ -820,6 +820,8 @@ def Home(*arg):
         while True:
             if Busy_Pin.value() == 1:
                 print("        actuator switches have been pressed, busy pin high")
+                Board2.HardHiZ(1)
+                Board2.HardHiZ(2)
                 break
             
     # Home screwdriver DC Motors and Solenoids
@@ -836,7 +838,7 @@ def Home(*arg):
         print("    Homing Gantry")
         # Home Gantry Code. +/- 400 is the max speed of the gantry
         print("        Gantry GoUntil switch command")
-        Board1.GoUntil(1,-400)
+        Board1.GoUntil(2,-400)
         
         # Check home status in while loop
         while True:
@@ -844,9 +846,9 @@ def Home(*arg):
                 # gantry at switch, continue.
                 print("        Gantry completed GoUntil Command")
                 break
-            elif Board1.isStalled(1) == True:
+            elif Board1.isStalled(2) == True:
                 # motor stalled, return an error and set flag
-                Board1.HardHiZ(1)
+                Board1.HardHiZ(2)
                 print("        Gantry Stalled during Home command")
                 print("        ERROR ERROR ERROR, return error")
                 ErrGantry.put(1)
@@ -854,17 +856,18 @@ def Home(*arg):
 
         # Release switch for gantry
         print("        releasing switch for gantry")
-        Board1.ReleaseSW(1,1)
+        Board1.ReleaseSW(2,1)
 
         # Check home status in while loop
         while True:
-            if Busy_Pin.value() == 1:
+            if Busy_Pin.value() == 2:
                 # Both rail actuators are homed, continue.
                 print("        Gantry completed ReleaseSW Command")
+                Board1.HardHiZ(2)
                 break
-            elif Board1.isStalled(1) == True:
+            elif Board1.isStalled(2) == True:
                 # motor stalled, return an error and set flag
-                Board1.HardHiZ(1)
+                Board1.HardHiZ(2)
                 print("        Gantry Stalled during Home command")
                 print("        ERROR ERROR ERROR, return error")
                 ErrGantry.put(1)
@@ -874,32 +877,35 @@ def Home(*arg):
     if ('Bact' in arg) or ('All' in arg):
         print("    Homing Beam Actuator")
         # Home beam actuator Code.
-        Board1.GoUntil(2,-400)
+        Board1.GoUntil(1,-400)
         
         # Check home status in while loop
         while True:
             if Busy_Pin.value() == 1:
                 # Both rail actuators are homed, continue.
+                print("        Beam Actuator completed GoUntil Command")
                 break
-            elif Board1.isStalled(2) == True:
+            elif Board1.isStalled(1) == True:
                 # motor stalled, return an error and set flag
-                Board1.HardHiZ(2)
+                Board1.HardHiZ(1)
                 print("        Beam Actuator Stalled during Home command")
                 print("        ERROR ERROR ERROR, return error")
                 ErrBeamAct.put(1)
                 return("Error Occured")
 
         # Release switch for beam actuator
-        Board1.ReleaseSW(2,1)
+        Board1.ReleaseSW(1,1)
 
         # Check home status in while loop
         while True:
             if Busy_Pin.value() == 1:
-                # Both rail actuators are homed, continue.
+                # beam actuator homed, continue.
+                print("        Beam Actuator completed ReleaseSW Command")
+                Board1.HardHiZ(1)
                 break
-            elif Board1.isStalled(2) == True:
+            elif Board1.isStalled(1) == True:
                 # motor stalled, return an error and set flag
-                Board1.HardHiZ(2)
+                Board1.HardHiZ(1)
                 print("        Beam Actuator Stalled during Home command")
                 print("        ERROR ERROR ERROR, return error")
                 ErrBeamAct.put(1)
@@ -1871,8 +1877,8 @@ import l6470nucleo                  # Import file
 SCK= pyb.Pin(pyb.Pin.cpu.A5)        # stby_rst_pin 
 ncs1= pyb.Pin(pyb.Pin.cpu.A10)      # cs_pin for board 1
 ncs2= pyb.Pin(pyb.Pin.cpu.A4)       # cs_pin for board 2
-Board1 = l6470nucleo.Dual6470(1,ncs1,SCK) # Controls the Gantry (1) and
-                                          # Beam Actuator (2)
+Board1 = l6470nucleo.Dual6470(1,ncs1,SCK) # Controls the Gantry (2) and
+                                          # Beam Actuator (1)
 Board2 = l6470nucleo.Dual6470(2,ncs2,SCK) # Controls Left (1) and Right
                                           # (2) rail actuators
 
