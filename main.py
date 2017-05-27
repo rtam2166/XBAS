@@ -589,13 +589,13 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
             given limits.
             '''
     print("Lowering probe")
-    Lower Probe
+    MoveProbe("Down")
     
     tolerance = 0
     previous = 0
     while True:
         # wait for readings from probe to change (delta) by the tolerance amount
-        current = Take Reading
+        current = ProbeEncoder.read()
         delta = current-previous
         print("    delta = "+str(delta))
         if delta <= tolerance or delta >= -tolerance:
@@ -612,7 +612,12 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
             ErrProbe.put(1)
 
     print("Raising probe")
-    Retract probe
+    MoveProbe("Up")
+    
+    while True:
+        # wait until the probe has fully withdrawn to the reference tick.
+        if ProbeReference.value() == 1:
+            break
     
     # If there was or was not an error
     if ErrProbe.get() == 0:
@@ -724,83 +729,96 @@ def Home(*arg):
     if ('Probe' in arg) or ('All' in arg):
         # If the probe registers at home, do nothing. If not, retract probe
         #   is at home
-        if PROBE AT REFERENCE TICK CHECK:
-            # True
+        if ProbeReference.value == 1:
+            # True, do nothing
             pass
         else:
-            # Retract Probe
-            RETRACT PROBE
+            # False, Retract Probe until it is at the reference tick
+            MoveProbe("Up")
             
-            # While loop to check the probe for when its reaches home
+            # While loop to check the probe for when its reaches reference
+            #   tick
             while True:
-                if PROBE AT REFERENCE TICK CHECK:
+                if ProbeReference.value == 1:
                     # True
                     break
             
-    # Now Home Right rail actuator
+    # Now Home Righ and Left rail actuator
     if ('RailActR' in arg) or ('All' in arg) or ('RailAct' in arg):
-        # Home actuator
-        HOME RIGHT ACTUATOR
-        
-        # Sleep 0.5sec
-        utime.sleep(500)
-        
-        # Check home status
-        if HOMED:
-            # System is homed, back off home.
-            EXTEND RIGHT RAIL ACT
-            
-            # Let system extend rail actuator for 0.5 sec
-            utime.sleep(500)
-        
-        # Home Actuator
-        HOME RIGHT ACTUATOR
-        
-        # Check status via while loop
-        while True:
-            if HOMED:
-                break
-        
-    # Now Home Left rail actuator
+        # Home right actuator. Speed is up for debate
+        Board2.GoUntil(2,-400)
     if ('RailActL' in arg) or ('All' in arg) or ('RailAct' in arg):
-        # Home actuator
-        HOME Left ACTUATOR
-        
-        # Sleep 0.5sec
-        utime.sleep(500)
-        
-        # Check home status
-        if HOMED:
-            # System is homed, back off home.
-            EXTEND RIGHT Left ACT
-            
-            # Let system extend rail actuator for 0.5 sec
-            utime.sleep(500)
-        
-        # Home Actuator
-        HOME Left ACTUATOR
+        # Home left actuator
+        Board2.GoUntil(1,-400)
+    if ('RailActR' in arg) or ('RailActL' in arg) or ('All' in arg) or \
+        ('RailAct' in arg):
+        # Check home status in while loop
+        while True:
+            if Busy_Pin.value() == 1:
+                # Both rail actuators are homed, continue.
+                break
+    
+        # Rail Actuators are home, release switch to back them off of
+        #   switch and back on.
+        if ('RailActR' in arg) or ('All' in arg) or ('RailAct' in arg):
+            # Release Switch Right
+            Board2.ReleaseSW(2,1)
+        if ('RailActL' in arg) or ('All' in arg) or ('RailAct' in arg):
+            # Home left actuator
+            Board2.ReleaseSW(1,1)
         
         # Check status via while loop
         while True:
-            if HOMED:
+            if Busy_Pin.value() == 1:
                 break
             
-    # Home screwdrivers
+    # Home screwdriver DC Motors and Solenoids
     if ('Screwdrivers' in arg) or ('All' in arg):
         # Turn of both DC motors and solenoids
-        DC RIGHT OFF
-        DC LEFT OFF
-        SOLENOID RIGHT OFF
-        SOLENOID LEFT OFF
+        DCMotorRight("Off")
+        DCMotorLeft("Off")
+        SolenoidRight("Off")
+        SolenoidLeft("Off")
         
     # Home Gantry
     if ('Gantry' in arg) or ('All' in arg):
-        # Home Gantry Code???
-        AAAAAAAAHHHHHHHH
+        # Home Gantry Code. +/- 400 is the max speed of the gantry
+        Board1.GoUntil(1,-400)
+        
+        # Check home status in while loop
+        while True:
+            if Busy_Pin.value() == 1:
+                # Both rail actuators are homed, continue.
+                break
+
+        # Release switch for gantry
+        Board1.ReleaseSW(1,1)
+
+        # Check home status in while loop
+        while True:
+            if Busy_Pin.value() == 1:
+                # Both rail actuators are homed, continue.
+                break
         
     # Home Beam Actuator
     if ('Bact' in arg) or ('All' in arg):
-        AAAAAAAHHHHHHH
+        # Home beam actuator Code.
+        Board1.GoUntil(2,-400)
+        
+        # Check home status in while loop
+        while True:
+            if Busy_Pin.value() == 1:
+                # Both rail actuators are homed, continue.
+                break
+
+        # Release switch for beam actuator
+        Board1.ReleaseSW(2,1)
+
+        # Check home status in while loop
+        while True:
+            if Busy_Pin.value() == 1:
+                # Both rail actuators are homed, continue.
+                break
         
 def Calibration_Mode():
     '''This function directs the XBAS machine to calibrate a machine csv file
@@ -1684,7 +1702,7 @@ def DCMotorLeft(Input):
         DCMotorLeftPin.High()
         
 DCMotorRightPin = pyb.Pin (pyb.Pin.cpu.B6, mode = pyb.Pin.OUT_PP)
-def DCMotorRightInput):
+def DCMotorRight(Input):
     '''This function turns the right DC motor on and off
     Function Input: Input is a string of either "On" or "Off"
                     which turns the motor on or off'''
@@ -1720,31 +1738,47 @@ Go = Go_Pin.value
 #   stop button.
 Stop_Pin = pyb.Pin(pyb.Pin.cpu.C5, mode = pyb.Pin.In)
 
-# External Interrupt Pin
+'''External Interrupt Pin'''
 extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, callback)
 
-# Three Position Swtich Pin
+'''Three Position Swtich Pin'''
 ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 adc = pyb.ADC(ThreeSwitch_Pin)
 ThreeSwitch = adc.read
 
-# Probe Pins
+'''Probe Pins'''
 #   H1 is the referencetick
-pyb.Pin(pyb.Pin.cpu.H1, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_DOWN)
+ProbeReference = pyb.Pin(pyb.Pin.cpu.H1, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_DOWN)
 
 #   B9 high sends the probe up if B8 is low
-pyb.Pin(pyb.Pin.cpu.B9, mode = pyb.Pin.OUT_PP, pull = pyb.Pin.PULL_DOWN)
+RaisePin = pyb.Pin(pyb.Pin.cpu.B9, mode = pyb.Pin.OUT_PP, pull = pyb.Pin.PULL_DOWN)
 
 #   B8 high sends the probe down if B9 is low
-pyb.Pin(pyb.Pin.cpu.B8, mode = pyb.Pin.OUT_PP, pull = pyb.Pin.PULL_DOWN)
+LowerPin = pyb.Pin(pyb.Pin.cpu.B8, mode = pyb.Pin.OUT_PP, pull = pyb.Pin.PULL_DOWN)
 
-# C6 encoder ch1
-ISSUE
+def MoveProbe(Input):
+    '''Short function to control the probe moving up and down
+    Input is string, either "Up", "Down", or "Stop", moving the probe up or down '''
+    if Input == "Up":
+        LowerPin.Low()
+        RaisePin.High()
+    elif Input == "Down":
+        RaisePin.Low()
+        LowerPin.High()
+    elif Input == "Stop":
+        RaisePin.Low()
+        LowerPin.Low()
+    
+# Encoder Pins and Object for the Probe
+#   C6 is encoder ch1
+#   C7 is encoder ch2
+#   ProbeEncoder is a Quadrature Encoder Object 
+import QuadEncoder
+pinC6 = pyb.Pin(pyb.Pin.cpu.C6, pyb.Pin.AF_PP,af=3)
+pinC7 = pyb.Pin(pyb.Pin.cpu.C7, pyb.Pin.AF_PP,af=3)
+ProbeEncoder = enc.Quad_Encoder(pinC6,pinC7,tim8)
 
-# C7 encoder ch2
-ISSUE
-
-# Stepper Driver pin and  object creations
+'''Stepper Driver pin and  object creations'''
 import l6470nucleo                  # Import file
 SCK= pyb.Pin(pyb.Pin.cpu.A5)        # stby_rst_pin 
 ncs1= pyb.Pin(pyb.Pin.cpu.A10)      # cs_pin for board 1
@@ -1755,7 +1789,7 @@ Board2 = l6470nucleo.Dual6470(2,ncs2,SCK) # Controls Left (1) and Right
                                           # (2) rail actuators
 
 import task_share
-# Variable Buffer Creation
+'''Variable Buffer Creation'''
 print("Buffer object creation")
 
 ErrInit = task_share.Share ('i', thread_protect = False,
