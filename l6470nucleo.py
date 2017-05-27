@@ -18,7 +18,7 @@ from math import ceil as math_ceil
 
 
 ## Maximum speed for the motor; default 65, or ~992 steps/s
-MAX_SPEED = const (65)
+MAX_SPEED = const (28)
 
 ## Acceleration for the motor; default 138, or 2008 steps/s^2
 ACCEL = const (12)
@@ -27,19 +27,19 @@ ACCEL = const (12)
 DECEL = const (12)
 
 ## The K_val constant for registers 0x09, 0x0A, 0x0B, 0x0C; default 0x29 = 41
-K_VAL = const (253)   # Calculated 200??
+K_VAL = const (40)   # Calculated 200??
 
 ## Intersection speed for register 0x0D; default 0x0408 = 1032
-INT_SPEED = const (6408)
+INT_SPEED = const (3141)
 
 ## Startup slope for register 0x0E; default 0x19 = 25
-ST_SLP = const (45)
+ST_SLP = const (264)
 
 ## Final slope for registers 0x0F, 0x10; default 0x29 = 41
-FN_SLP = const (215)
+FN_SLP = const (397)
 
 ## Number of Microsteps, num which are powers of 2 up to 128 are acceptable.
-STEP_SEL = const (1)
+STEP_SEL = const (4)
 
 ## Define SYNC_ENable bitmask. 0x80 for High, 0x00 for Low
 SYNC_EN = const(0x00)   
@@ -49,7 +49,7 @@ SYNC_SEL = const(0x10)
 
 ## STALL_TH. Default of 2.03A
 # pg 47 of L6470 Programming Manual for details
-STALL_TH = const(10)
+STALL_TH = const(16)
 
 class Dual6470:
     ## This class implements a driver for the dual L6470 stepping motor driver 
@@ -63,72 +63,7 @@ class Dual6470:
     #  by default.
     
     def __init__ (self, spi_object, cs_pin, stby_rst_pin):
-    ## Initialize the Dual L6470 driver. The modes of the @c CS and
-    #  @c STBY/RST pins are set and the SPI port is set up correctly. 
-    #  @param spi_object A SPI object already initialized. used to talk to the 
-    #      driver chips, either 1 or 2 for most Nucleos
-    #  @param cs_pin The pin which is connected to the driver chips' SPI
-    #      chip select (or 'slave select') inputs, in a pyb.Pin object 
-    #  @param stby_rst_pin The pin which is connected to the driver 
-    #      chips' STBY/RST inputs, in a pyb.Pin object
-    
-        ## The CPU pin connected to the Chip Select (AKA 'Slave Select') pin
-        #    of both the L6470 drivers. 
-        self.cs_pin = cs_pin
-
-        ## The CPU pin connected to the STBY/RST pin of the 6470's.
-        self.stby_rst_pin = stby_rst_pin
-
-        ## The SPI object, configured with parameters that work for L6470's.
-        # pyb.SPI (spi_number, mode=pyb.SPI.MASTER, 
-        #                    baudrate=2000000, polarity=1, phase=1, 
-        #                    bits=8, firstbit=pyb.SPI.MSB)
-        self.spi = spi_object
-
-        # Make sure the CS and STBY/RST pins are configured correctly
-        self.cs_pin.init (pyb.Pin.OUT_PP, pull=pyb.Pin.PULL_NONE)
-        self.cs_pin.high ()
-        self.stby_rst_pin.init (pyb.Pin.OUT_OD, pull=pyb.Pin.PULL_NONE)
-
-        # Reset the L6470's
-        stby_rst_pin.low ()
-        time.sleep (0.01)
-        stby_rst_pin.high ()
-
-        # Set the registers which need to be modified for the motor to go
-        # This value affects how hard the motor is being pushed
-        self._set_par_1b ('KVAL_HOLD', K_VAL)
-        self._set_par_1b ('KVAL_RUN', K_VAL)
-        self._set_par_1b ('KVAL_ACC', K_VAL)
-        self._set_par_1b ('KVAL_DEC', K_VAL)
-
-        # Speed at which we transition from slow to fast V_B compensation
-        self._set_par_2b ('INT_SPEED', INT_SPEED)
-
-        # Acceleration and deceleration back EMF compensation slopes
-        self._set_par_1b ('ST_SLP', ST_SLP)
-        self._set_par_1b ('FN_SLP_ACC', ST_SLP)
-        self._set_par_1b ('FN_SLP_DEC', ST_SLP)
-
-        # Set the maximum speed at which motor will run
-        self._set_par_2b ('MAX_SPEED', MAX_SPEED)
-
-        # Set the maximum acceleration and deceleration of motor
-        self._set_par_2b ('ACC', ACCEL)
-        self._set_par_2b ('DEC', DECEL)
-        
-        # Set the number of Microsteps to use
-        self._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
-        
-        # Set the Stall Threshold
-        self._setStallThreshold(STALL_TH)
-
-        # Set motors in high impedence mode
-        self.SoftHiZ(1)
-        self.SoftHiZ(2)
-        self.GetStatus(1)
-        self.GetStatus(2)
-        # === DICTIONARIES ===
+    # === DICTIONARIES ===
         """ Dictionary of available registers and their addresses.
         """
         self.REGISTER_DICT = {} #        ADDR | LEN |  DESCRIPTION     | xRESET | Write
@@ -209,6 +144,74 @@ class Dual6470:
         self.COMMAND_DICT['SoftHiZ'    ] = 0xA0 # 
         self.COMMAND_DICT['HardHiZ'    ] = 0xA8 # 
         self.COMMAND_DICT['GetStatus'  ] = 0xD0 #
+    ## Initialize the Dual L6470 driver. The modes of the @c CS and
+    #  @c STBY/RST pins are set and the SPI port is set up correctly. 
+    #  @param spi_object A SPI object already initialized. used to talk to the 
+    #      driver chips, either 1 or 2 for most Nucleos
+    #  @param cs_pin The pin which is connected to the driver chips' SPI
+    #      chip select (or 'slave select') inputs, in a pyb.Pin object 
+    #  @param stby_rst_pin The pin which is connected to the driver 
+    #      chips' STBY/RST inputs, in a pyb.Pin object
+    
+        ## The CPU pin connected to the Chip Select (AKA 'Slave Select') pin
+        #    of both the L6470 drivers. 
+        self.cs_pin = cs_pin
+
+        ## The CPU pin connected to the STBY/RST pin of the 6470's.
+        self.stby_rst_pin = stby_rst_pin
+
+        ## The SPI object, configured with parameters that work for L6470's.
+        # pyb.SPI (spi_number, mode=pyb.SPI.MASTER, 
+        #                    baudrate=2000000, polarity=1, phase=1, 
+        #                    bits=8, firstbit=pyb.SPI.MSB)
+        self.spi = pyb.SPI (spi_object, mode=pyb.SPI.MASTER, 
+                            baudrate=2000000, polarity=1, phase=1, 
+                            bits=8, firstbit=pyb.SPI.MSB)
+
+        # Make sure the CS and STBY/RST pins are configured correctly
+        self.cs_pin.init (pyb.Pin.OUT_PP, pull=pyb.Pin.PULL_NONE)
+        self.cs_pin.high ()
+        self.stby_rst_pin.init (pyb.Pin.OUT_OD, pull=pyb.Pin.PULL_NONE)
+
+        # Reset the L6470's
+        stby_rst_pin.low ()
+        time.sleep (0.01)
+        stby_rst_pin.high ()
+
+        # Set the registers which need to be modified for the motor to go
+        # This value affects how hard the motor is being pushed
+        self._set_par_1b ('KVAL_HOLD', K_VAL)
+        self._set_par_1b ('KVAL_RUN', K_VAL)
+        self._set_par_1b ('KVAL_ACC', K_VAL)
+        self._set_par_1b ('KVAL_DEC', K_VAL)
+
+        # Speed at which we transition from slow to fast V_B compensation
+        self._set_par_2b ('INT_SPEED', INT_SPEED)
+
+        # Acceleration and deceleration back EMF compensation slopes
+        self._set_par_1b ('ST_SLP', ST_SLP)
+        self._set_par_1b ('FN_SLP_ACC', ST_SLP)
+        self._set_par_1b ('FN_SLP_DEC', ST_SLP)
+
+        # Set the maximum speed at which motor will run
+        self._set_par_2b ('MAX_SPEED', MAX_SPEED)
+
+        # Set the maximum acceleration and deceleration of motor
+        self._set_par_2b ('ACC', ACCEL)
+        self._set_par_2b ('DEC', DECEL)
+        
+        # Set the number of Microsteps to use
+        self._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
+        
+        # Set the Stall Threshold
+        self._setStallThreshold(STALL_TH)
+
+        # Set motors in high impedence mode
+        self.SoftHiZ(1)
+        self.SoftHiZ(2)
+        self.GetStatus(1)
+        self.GetStatus(2)
+        
         
 
     def _setStallThreshold(self, value):
@@ -574,12 +577,10 @@ command can be given only when the previous motion command has been completed
     '''-------------------------------------------------------'''
     def GetTwosComplement(data, length):
         if (data & (1 << (length - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
-        data = data - (1 << length)        # compute negative value
-        return val                         # return positive value as is
+            data = data - (1 << length)        # compute negative value
+        return (data)                         # return positive value as is
     
     def isStalled(self, motor):
-        '''Returns True or False if the motor being checked has stalled. Erases the 
-        stall register of the other motor of the same board.'''
         status = self.GetStatus(1)
         if ((status[motor-1]&(1<<13) == 0) or (status[motor-1]&(1<<14) == 0)):
             return True
