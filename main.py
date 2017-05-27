@@ -562,7 +562,7 @@ def ErrorHandler():
     Lights_Sound_Action()
     
     # Now Home the system
-    Home Function
+    Home("All")
         
 def callback():
     '''This is a function which runs during interrupts. This should occur when
@@ -1335,7 +1335,7 @@ def Leveling_Mode():
             # At this point, the beam should be leveled with no errors. Home, 
             #   zero flags and exit function.
             while True:
-                Home FUnction
+                Home("Probe","Gantry")
                 if no error:
                     break
             zero_flags()
@@ -1499,11 +1499,11 @@ def TorqueDown(Input):
                 if Input == "L":
                     # Left Side
                     print("Homing Left Actuator")
-                    Home Left Actuator
+                    Home("RailActL")
                 if Input == "R":
                     # Right Side
                     print("Homing Right Actuator")
-                    Home Right Actuator
+                    Home("RailActR")
     
                 # Program done, return
                 return()
