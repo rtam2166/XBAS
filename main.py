@@ -1806,6 +1806,7 @@ def SolenoidLeft(Input):
         SolenoidLeftPin.low()
     elif Input == "Off":
         SolenoidLeftPin.high()
+SolenoidLeft("Off")
         
 SolenoidRightPin = pyb.Pin (pyb.Pin.cpu.B7, mode = pyb.Pin.OUT_PP,
                             pull = pyb.Pin.PULL_UP)
@@ -1817,6 +1818,7 @@ def SolenoidRight(Input):
         SolenoidRightPin.low()
     elif Input == "Off":
         SolenoidRightPin.high()
+SolenoidRight("Off")
         
 DCMotorLeftPin = pyb.Pin (pyb.Pin.cpu.A4, mode = pyb.Pin.OUT_PP,
                           pull = pyb.Pin.PULL_UP)
@@ -1828,6 +1830,7 @@ def DCMotorLeft(Input):
         DCMotorLeftPin.low()
     elif Input == "Off":
         DCMotorLeftPin.high()
+DCMotorLeft("Off")
         
 DCMotorRightPin = pyb.Pin (pyb.Pin.cpu.B6, mode = pyb.Pin.OUT_PP,
                            pull = pyb.Pin.PULL_UP)
@@ -1839,7 +1842,8 @@ def DCMotorRight(Input):
         DCMotorRightPin.low()
     elif Input == "Off":
         DCMotorRightPin.high()
-
+DCMotorRight("Off")
+        
 # The Piano Switch Board Pins numbered 0 to 4 from left to right, left most
 #   switch being Note0
 Note0 = pyb.Pin (pyb.Pin.cpu.A14, mode = pyb.Pin.OUT_PP,
