@@ -14,26 +14,24 @@
 
 import pyb
 import time
-from math import ceil as math_ceil
-
-
+'''
 ## Maximum speed for the motor; default 65, or ~992 steps/s
-MAX_SPEED = const (40)
+MAX_SPEED = 0
 
 ## Acceleration for the motor; default 138, or 2008 steps/s^2
-ACCEL = const (12)
+ACCEL = const (5)
 
 ## Deceleration for the motor; default 138, or 2008 steps/s^2
 DECEL = const (12)
 
 ## The K_val constant for registers 0x09, 0x0A, 0x0B, 0x0C; default 0x29 = 41
-K_VAL = const (80)   # Calculated 200??
+K_VAL = const (90)   # Calculated 200??
 
 ## Intersection speed for register 0x0D; default 0x0408 = 1032
-INT_SPEED = const (3141)
+INT_SPEED = const (1032)
 
 ## Startup slope for register 0x0E; default 0x19 = 25
-ST_SLP = const (264)
+ST_SLP = const (25)
 
 ## Final slope for registers 0x0F, 0x10; default 0x29 = 41
 FN_SLP = const (397)
@@ -50,7 +48,7 @@ SYNC_SEL = const(0x10)
 ## STALL_TH. Default of 2.03A
 # pg 47 of L6470 Programming Manual for details
 STALL_TH = const(16)
-
+'''
 class Dual6470:
     ## This class implements a driver for the dual L6470 stepping motor driver 
     #  chips on a Nucleo IHM02A1 board. The two driver chips are connected in 
@@ -152,7 +150,6 @@ class Dual6470:
     #      chip select (or 'slave select') inputs, in a pyb.Pin object 
     #  @param stby_rst_pin The pin which is connected to the driver 
     #      chips' STBY/RST inputs, in a pyb.Pin object
-    
         ## The CPU pin connected to the Chip Select (AKA 'Slave Select') pin
         #    of both the L6470 drivers. 
         self.cs_pin = cs_pin
@@ -177,46 +174,56 @@ class Dual6470:
         stby_rst_pin.low ()
         time.sleep (0.01)
         stby_rst_pin.high ()
-
+        '''
         # Set the registers which need to be modified for the motor to go
         # This value affects how hard the motor is being pushed
+        K_VAL = 80
         self._set_par_1b ('KVAL_HOLD', K_VAL)
         self._set_par_1b ('KVAL_RUN', K_VAL)
         self._set_par_1b ('KVAL_ACC', K_VAL)
         self._set_par_1b ('KVAL_DEC', K_VAL)
 
         # Speed at which we transition from slow to fast V_B compensation
+        INT_SPEED = 1032 #3141
         self._set_par_2b ('INT_SPEED', INT_SPEED)
 
         # Acceleration and deceleration back EMF compensation slopes
+        ST_SLP = 25
         self._set_par_1b ('ST_SLP', ST_SLP)
         self._set_par_1b ('FN_SLP_ACC', ST_SLP)
         self._set_par_1b ('FN_SLP_DEC', ST_SLP)
 
         # Set the maximum speed at which motor will run
+        MAX_SPEED = 1
         self._set_par_2b ('MAX_SPEED', MAX_SPEED)
 
         # Set the maximum acceleration and deceleration of motor
+        ACCEL = 5
+        DECEL = 12
         self._set_par_2b ('ACC', ACCEL)
         self._set_par_2b ('DEC', DECEL)
         
         # Set the number of Microsteps to use
+        SYNC_EN = 0x00
+        SYNC_SEL = 0x10
+        STEP_SEL = 8
         self._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
         
         # Set the Stall Threshold
+        STALL_TH = 64
         self._setStallThreshold(STALL_TH)
 
         # Set motors in high impedence mode
         self.SoftHiZ(1)
         self.SoftHiZ(2)
-        self.GetStatus(1)
-        self.GetStatus(2)
-        
+        self.GetStatus(1,verbose = 0)
+        self.GetStatus(2,verbose = 0)
+        '''
         
 
     def _setStallThreshold(self, value):
         ## Sets the threshold back emf value for the board to stall at.
-        # @param value is an integer input from 1 to 16 which corresponds to a
+        # @param value is an integer input from 1 to 64 which corresponds to a
         #               current of x*31.25mA where x is the input from 1 to 16
         self._set_par_1b('STALL_TH', value)    
     
@@ -533,10 +540,10 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
 
     '''-------------------------------------------------------'''
     
-    def GetStatus (self, motor, verbose=0):
+    def GetStatus (self, motor, verbose=1):
         status = self._get_params(self.COMMAND_DICT['GetStatus'], 2)
-#        if verbose:
-#            self.Print_Status(motor, status)
+        if verbose:
+            self.Print_Status(motor, status)
         return status
     '''-------------------------------------------------------'''
     
@@ -589,70 +596,70 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
             return False
          
     '''-------------------------------------------------------'''
-#    def Print_Status(self, motor, status):
-#        """ Formatted printing of status codes for the driver.
-#
-#            @arg @c motor  (int): the motor which the status is representing.
-#            @arg @c status (int): the code returned by a GetStatus call.
-#        """
-#        # check error flags
-#        print ('Driver ', str(motor), ' Status: ') #, bin(status))
-#        print(status)
-#        for bit_addr in range(7,15):
-#            print('  Flag ', self.STATUS_DICT[bit_addr][0], ': ', end='')
-#            # we shift a 1 to the bit address, then shift the result down again
-#            if ((status[motor-1] & 1<<bit_addr)>>bit_addr)==self.STATUS_DICT[bit_addr][1]:
-#                # the result should either be a 1 or 0. Which is 'ok' depends.
-#                print("ok")
-#            else:
-#                print("Alert!")
-#        
-#        # check SCK_MOD
-#        if status[motor-1] & (1<<15):
-#            print('  Step-clock mode is on.')
-#        else:
-#            print("  Step-clock mode is off.")
-#        
-#        # check MOT_STATUS
-#        if status[motor-1] & (1<<6):
-#            if status[motor-1] & (1<<5):
-#                print("  Motor is at constant speed.")
-#            else:
-#                print("  Motor is decelerating.")
-#        else:
-#            if status[motor-1] & (1<<5):
-#                print("  Motor is accelerating.")
-#            else:
-#                print("  Motor is stopped.")
-#                
-#        # check DIR
-#        if status[motor-1] & (1<<4):
-#            print("  Motor direction is set to forward.")
-#        else:
-#            print("  Motor direction is set to reverse.")
-#            
-#        # check BUSY
-#        if not (status[motor-1] & (1<<1)):
-#            print("  Motor is busy with a movement command.")
-#        else:
-#            print("  Motor is ready to recieve movement commands.")
-#            
-#        # check HiZ
-#        if status[motor-1] & 1:
-#            print("  Bridges are in high-impedance mode (disabled).")
-#        else:
-#            print("  Bridges are in low-impedance mode (active).")
-#        
-#        # check SW_EVEN flag
-#        if status[motor-1] & (1<<3):
-#            print("  External switch has been clicked since last check.")
-#        else:
-#            print("  External switch has no activity to report.")
-#        # check SW_F
-#        if status[motor-1] & (1<<2):
-#            print("  External switch is closed (grounded).")
-#        else:
-#            print("  External switch is open.")
+    def Print_Status(self, motor, status):
+        """ Formatted printing of status codes for the driver.
+
+            @arg @c motor  (int): the motor which the status is representing.
+            @arg @c status (int): the code returned by a GetStatus call.
+        """
+        # check error flags
+        print ('Driver ', str(motor), ' Status: ') #, bin(status))
+        print(status)
+        for bit_addr in range(7,15):
+            print('  Flag ', self.STATUS_DICT[bit_addr][0], ': ', end='')
+            # we shift a 1 to the bit address, then shift the result down again
+            if ((status[motor-1] & 1<<bit_addr)>>bit_addr)==self.STATUS_DICT[bit_addr][1]:
+                # the result should either be a 1 or 0. Which is 'ok' depends.
+                print("ok")
+            else:
+                print("Alert!")
+        
+        # check SCK_MOD
+        if status[motor-1] & (1<<15):
+            print('  Step-clock mode is on.')
+        else:
+            print("  Step-clock mode is off.")
+        
+        # check MOT_STATUS
+        if status[motor-1] & (1<<6):
+            if status[motor-1] & (1<<5):
+                print("  Motor is at constant speed.")
+            else:
+                print("  Motor is decelerating.")
+        else:
+            if status[motor-1] & (1<<5):
+                print("  Motor is accelerating.")
+            else:
+                print("  Motor is stopped.")
+                
+        # check DIR
+        if status[motor-1] & (1<<4):
+            print("  Motor direction is set to forward.")
+        else:
+            print("  Motor direction is set to reverse.")
+            
+        # check BUSY
+        if not (status[motor-1] & (1<<1)):
+            print("  Motor is busy with a movement command.")
+        else:
+            print("  Motor is ready to recieve movement commands.")
+            
+        # check HiZ
+        if status[motor-1] & 1:
+            print("  Bridges are in high-impedance mode (disabled).")
+        else:
+            print("  Bridges are in low-impedance mode (active).")
+        
+        # check SW_EVEN flag
+        if status[motor-1] & (1<<3):
+            print("  External switch has been clicked since last check.")
+        else:
+            print("  External switch has no activity to report.")
+        # check SW_F
+        if status[motor-1] & (1<<2):
+            print("  External switch is closed (grounded).")
+        else:
+            print("  External switch is open.")
             
 #setLoSpdOpt(boolean enable);
 #configSyncPin(byte pinFunc, byte syncSteps);

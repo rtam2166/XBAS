@@ -113,6 +113,7 @@ def ImportSong():
         f.close()
         return("Error Occured")
 """
+
 def zero_flags():
     '''Function sets all error flag buffers to false aka 0 or its equivalent.
     No input paramaters or returned values. Does require for the task_share.py
@@ -129,6 +130,7 @@ def zero_flags():
     global ErrRailActR
     global ErrRailActL
     global XBeam
+    global ErrSong
     
     ErrInit=0
     ErrSleep=0
@@ -184,7 +186,6 @@ def Mode():
     else:
 #        print("No Mode Selected")
         return(0)
-    
     
 def FileCheck():
     '''Function checks for files in the same directory and writes to the error
@@ -312,7 +313,8 @@ def ImportBoltPattern():
             of which side is to be bolted and the other containing positions
             relative to the gantry's zero position of where to move to.
     '''
-                  
+    global XBeam
+    global ErrBoltCsv
 #    print("Beginning to import BoltPatternXXX.csv")
     # Getting length value of the X-Beam from the buffer XBeam
     Input = XBeam
@@ -412,6 +414,8 @@ def ImportCalibration():
             function returns a list of values'''            
                   
 #    print("Beginning to import CalibrationXXX.csv")
+    global ErrCalCsv
+    global XBeam
 
     # Getting length value of the X-Beam from the buffer XBeam
     Input = XBeam
@@ -495,7 +499,13 @@ def Lights_Sound_Action():
     Blink = 0               # Variable that says LEDs need to blink
     Stop = 0                # Variable that counts number of Go's pressed to 
                             #   exit function
-
+    global ErrGantry
+    global ErrProbe
+    global ErrBeamAct
+    global ErrSong
+    global ErrRailActR
+    global ErrRailActL
+    
     if ErrGantry == 1:
         # If the Gantry error flag is raised, tell system to turn on green and
         #   yellow LEDs, no blinking
@@ -769,15 +779,16 @@ def Move_Gantry_To(Destination, probe = False):
                                 #   per revolution of the stepper motor,
                                 #   dependent on the leadscrew pitch. Value is
                                 #   in mm
-    StepsPerRev = 200           # Variable indicating the number of steps
+    StepsPerRev = 200*8         # Variable indicating the number of steps
                                 #   per revolution for the stepper motor. This
-                                #   is # of full steps per revolution.
+                                #   is # of microsteps per revolution.
     xOffset = 00000     # Distance from gantry home position to the closest end
-                        #   of the X-Beam.
+                        #   of the X-Beam. Absolute distsnce in mm
     xLimit = 00000      # Maximum travel of the gantry from the end of the
                         #   X-Beam to the Lead Screw Raiser minus the gantry 
-                        #   width
+                        #   width. Absolute units in mm.
     #ISSUE See above 2 variables
+    global ErrGantry
     
 #    print("Moving Gantry to position x: "+str(Destination))
 #    print("    Probe at the end of the move? "+str(probe))
@@ -868,7 +879,9 @@ def Home(*arg):
         None'''
     
 #    print("Beginning to Home system")
-                
+    global ErrGantry
+    global ErrBeamAct
+    
     # Set the stall thresholds of the stepper drivers to the maximum
     #   ammount (which they should be already)
     Board1._setStallThreshold(16)
@@ -1039,7 +1052,8 @@ def Calibration_Mode():
     '''
                   
 #    print("Beginning Calibration Mode")
-                  
+    global ErrCalibration
+    
     # Variable switch is used to identify if this is the first time running
     #   through this program or not.
     switch = 0
@@ -1256,7 +1270,8 @@ def Leveling_Mode():
         None
     '''
 
-    print("Beginning Leveling half of the Assembly Mode")
+#    print("Beginning Leveling half of the Assembly Mode")
+    global ErrLeveling
     
     # Variable switch indicates if this is the first time the code is
     #   running through the code. This is for the purpose of skipping
@@ -1462,7 +1477,9 @@ def TorqueDown(Input):
         None'''
     
 #    print("Beginning to Toque Down")
-    
+    global ErrRailActL
+    global ErrRailActR
+    global ErrAssembly
     # Rail Actuators constants
     DistancePerStep = .0079375 # mm linear travel per step
     
@@ -1636,6 +1653,7 @@ def Assembly_Mode():
     '''
     
 #    print("Beginning Assembly half of the assembly mode")
+    global ErrAssembly
     
     # Set Error Flag for mode
     ErrAssembly = 1
@@ -1705,6 +1723,7 @@ def Sleep_Mode(Input):
         Time spent in the sleep mode after if finishes homing with no issues.
     '''
     import utime
+    global ErrSleep
     
     # Turn all lights and sounds off, then turn on yellow lED
     Lights_Sound_Off()
@@ -1935,7 +1954,7 @@ global ErrCalCsv
 global ErrPorbe
 global ErrRailActR
 global ErrRailActL
-#global ErrSong
+global ErrSong
 global XBeam
 
 # Issues with memory space have resulted in the deletion of ImportSong(). 
@@ -1956,7 +1975,6 @@ extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_UP,
 # Zero the above buffers
 zero_flags()
 
-print("a")
 # Turn on only the yellow LED
 Lights_Sound_Off()
 YellowLED.high()
@@ -1967,7 +1985,7 @@ YellowLED.high()
 # Set Timer measured in milliseconds. Initially set at 600 so the system
 #   homes the first time round.
 Timer = 600
-
+'''
 #print("Beginning main program")
 # 1st Layer while loop
 while True:
@@ -2047,3 +2065,4 @@ while True:
             # End of the 2nd Layer
         
         # End of 1st Layer
+'''
