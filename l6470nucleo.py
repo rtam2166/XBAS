@@ -589,7 +589,7 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
         return (data)                         # return positive value as is
     
     def isStalled(self, motor):
-        status = self.GetStatus(1)
+        status = self.GetStatus(1,verbose = 0)
         if ((status[motor-1]&(1<<13) == 0) or (status[motor-1]&(1<<14) == 0)):
             return True
         else:
