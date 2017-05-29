@@ -1937,8 +1937,75 @@ ncs1= pyb.Pin(pyb.Pin.cpu.A10)      # cs_pin for board 1
 ncs2= pyb.Pin(pyb.Pin.cpu.A4)       # cs_pin for board 2
 Board1 = l6470nucleo.Dual6470(1,ncs1,SCK) # Controls the Gantry (2) and
                                           # Beam Actuator (1)
+     # Set the registers which need to be modified for the motor to go
+        # This value affects how hard the motor is being pushed
+K_VAL = 80
+Board1._set_par_1b ('KVAL_HOLD', K_VAL)
+Board1._set_par_1b ('KVAL_RUN', K_VAL)
+Board1._set_par_1b ('KVAL_ACC', K_VAL)
+Board1._set_par_1b ('KVAL_DEC', K_VAL)
+# Speed at which we transition from slow to fast V_B compensation
+INT_SPEED = 1032 #3141
+Board1._set_par_2b ('INT_SPEED', INT_SPEED)
+# Acceleration and deceleration back EMF compensation slopes
+ST_SLP = 25
+Board1._set_par_1b ('ST_SLP', ST_SLP)
+Board1._set_par_1b ('FN_SLP_ACC', ST_SLP)
+Board1._set_par_1b ('FN_SLP_DEC', ST_SLP)
+# Set the maximum speed at which motor will run
+MAX_SPEED = 1
+Board1._set_par_2b ('MAX_SPEED', MAX_SPEED)
+# Set the maximum acceleration and deceleration of motor
+ACCEL = 5
+DECEL = 12
+Board1._set_par_2b ('ACC', ACCEL)
+Board1._set_par_2b ('DEC', DECEL)
+
+# Set the number of Microsteps to use
+SYNC_EN = 0x00
+SYNC_SEL = 0x10
+STEP_SEL = 8
+Board1._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
+        
+        # Set the Stall Threshold
+STALL_TH = 64
+Board1._setStallThreshold(STALL_TH)
 Board2 = l6470nucleo.Dual6470(1,ncs2,SCK) # Controls Left (1) and Right
                                           # (2) rail actuators
+                                              # Beam Actuator (1)
+     # Set the registers which need to be modified for the motor to go
+        # This value affects how hard the motor is being pushed
+K_VAL = 80
+Board2._set_par_1b ('KVAL_HOLD', K_VAL)
+Board2._set_par_1b ('KVAL_RUN', K_VAL)
+Board2._set_par_1b ('KVAL_ACC', K_VAL)
+Board2._set_par_1b ('KVAL_DEC', K_VAL)
+# Speed at which we transition from slow to fast V_B compensation
+INT_SPEED = 1032 #3141
+Board2._set_par_2b ('INT_SPEED', INT_SPEED)
+# Acceleration and deceleration back EMF compensation slopes
+ST_SLP = 25
+Board2._set_par_1b ('ST_SLP', ST_SLP)
+Board2._set_par_1b ('FN_SLP_ACC', ST_SLP)
+Board2._set_par_1b ('FN_SLP_DEC', ST_SLP)
+# Set the maximum speed at which motor will run
+MAX_SPEED = 1
+Board2._set_par_2b ('MAX_SPEED', MAX_SPEED)
+# Set the maximum acceleration and deceleration of motor
+ACCEL = 5
+DECEL = 12
+Board2._set_par_2b ('ACC', ACCEL)
+Board2._set_par_2b ('DEC', DECEL)
+
+# Set the number of Microsteps to use
+SYNC_EN = 0x00
+SYNC_SEL = 0x10
+STEP_SEL = 8
+Board2._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
+        
+        # Set the Stall Threshold
+STALL_TH = 64
+Board2._setStallThreshold(STALL_TH)
 #print("Importing task share")
 #import task_share
 '''Variable Buffer Creation'''
