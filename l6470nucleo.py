@@ -378,33 +378,33 @@ class Dual6470:
     
     '''-------------------------------------------------------'''
     
-    def StepClock(self, direc = None):
-        '''Needs Writing'''
+#    def StepClock(self, direc = None):
+#        '''Needs Writing'''
 
     '''-------------------------------------------------------'''
 
-    def Move (self, motor, steps, direc = None):
-        ## Tell motor driver @c motor to move @c num_steps in the direction
-        #  @c direction. 
-        #  @param motor Which motor to move, either 1 or 2
-        #  @param steps How many steps to move, in a 20 bit number 
-        #  @param direc The direction in which to move, either 0 for one
-        #      way or nonzero for the other; if unspecified, the sign of the
-        #      number of steps will be used, positive meaning direction 0
-
-        # Figure out the intended direction
-        if direc == None:
-            if steps <= 0:
-                direc = 1
-                steps = -steps
-            else:
-                direc = 0
-        else:
-            if direc != 0:
-                direc = 1
-
-        # Call the _cmd_3b() method to do most of the work
-        self._cmd_3b (motor, self.COMMAND_DICT['Move'] | direc, steps & 0x003FFFFF)
+#    def Move (self, motor, steps, direc = None):
+#        ## Tell motor driver @c motor to move @c num_steps in the direction
+#        #  @c direction. 
+#        #  @param motor Which motor to move, either 1 or 2
+#        #  @param steps How many steps to move, in a 20 bit number 
+#        #  @param direc The direction in which to move, either 0 for one
+#        #      way or nonzero for the other; if unspecified, the sign of the
+#        #      number of steps will be used, positive meaning direction 0
+#
+#        # Figure out the intended direction
+#        if direc == None:
+#            if steps <= 0:
+#                direc = 1
+#                steps = -steps
+#            else:
+#                direc = 0
+#        else:
+#            if direc != 0:
+#                direc = 1
+#
+#        # Call the _cmd_3b() method to do most of the work
+#        self._cmd_3b (motor, self.COMMAND_DICT['Move'] | direc, steps & 0x003FFFFF)
 
 
     '''-------------------------------------------------------'''
@@ -421,9 +421,9 @@ class Dual6470:
 
     '''-------------------------------------------------------'''
 
-    def GoTo_DIR(self, motor, pos_steps, direc):
-        '''Needs Writing
-        Not needed for our code - Whittaker'''
+#    def GoTo_DIR(self, motor, pos_steps, direc):
+#        '''Needs Writing
+#        Not needed for our code - Whittaker'''
         
     '''-------------------------------------------------------'''
 
@@ -465,15 +465,15 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
         self._cmd_1b(motor, self.COMMAND_DICT['ReleaseSW'] | direc) 
     '''-------------------------------------------------------'''
     
-    def GoHome(self, motor):
-        '''Same as Goto(0), not needed'''
+#    def GoHome(self, motor):
+#        '''Same as Goto(0), not needed'''
         
     '''-------------------------------------------------------'''
     
-    def GoMark(self, motor):
-        '''The GoMark command keeps the BUSY flag low until the MARK position is reached. This
-command can be given only when the previous motion command has been completed
-(BUSY flag released).'''
+#    def GoMark(self, motor):
+#        '''The GoMark command keeps the BUSY flag low until the MARK position is reached. This
+#command can be given only when the previous motion command has been completed
+#(BUSY flag released).'''
         
     '''-------------------------------------------------------'''
 
@@ -491,22 +491,22 @@ command can be given only when the previous motion command has been completed
         
     '''-------------------------------------------------------'''
 
-    def SoftStop (self, motor):
-        ## Tell a motor driver to decelerate its motor and stop wherever it ends
-        #  up after the deceleration.
-        #  @param motor Which motor is to halt, 1 or 2
-        self._cmd_1b (motor, self.COMMAND_DICT['SoftStop'])
+#    def SoftStop (self, motor):
+#        ## Tell a motor driver to decelerate its motor and stop wherever it ends
+#        #  up after the deceleration.
+#        #  @param motor Which motor is to halt, 1 or 2
+#        self._cmd_1b (motor, self.COMMAND_DICT['SoftStop'])
 
     '''-------------------------------------------------------'''
 
-    def HardStop (self, motor):
-        ## Tell the specified motor to stop immediately, not even doing the usual
-        #  smooth deceleration. This command should only be used when the compost
-        #  is really hitting the fan because it asks for nearly infinite 
-        #  acceleration of the motor, and this will probably cause the motor to
-        #  miss some steps and have an inaccurate position count. 
-        #  @param motor Which motor is to halt, 1 or 2
-        self._cmd_1b (motor, self.COMMAND_DICT['HardStop'])
+#    def HardStop (self, motor):
+#        ## Tell the specified motor to stop immediately, not even doing the usual
+#        #  smooth deceleration. This command should only be used when the compost
+#        #  is really hitting the fan because it asks for nearly infinite 
+#        #  acceleration of the motor, and this will probably cause the motor to
+#        #  miss some steps and have an inaccurate position count. 
+#        #  @param motor Which motor is to halt, 1 or 2
+#        self._cmd_1b (motor, self.COMMAND_DICT['HardStop'])
 
     '''-------------------------------------------------------'''
     
@@ -535,45 +535,46 @@ command can be given only when the previous motion command has been completed
     
     def GetStatus (self, motor, verbose=0):
         status = self._get_params(self.COMMAND_DICT['GetStatus'], 2)
-        if verbose:
-            self.Print_Status(motor, status)
+#        if verbose:
+#            self.Print_Status(motor, status)
         return status
     '''-------------------------------------------------------'''
     
 #   -----------------Secondary Functions-------------------
 
     '''-------------------------------------------------------'''
-    
-    def getPositions (self, motor):
-        ## Get the positions stored in the drivers for the selected motor. Each
-        #  driver stores its motor's position in a 22-bit register. If only
-        #  one position is needed, it's efficient to get both because the
-        #  drivers are daisy-chained on the SPI bus, so we have to send two
-        #  commands and read a bunch of bytes of data anyway. 
-        #  @return The current positions of the selected motor
-        
-        # Read (command 0x20) register 0x01, the current position
-        [data_1, data_2] = self._get_params (self.COMMAND_DICT['GetParam']|self.REGISTER_DICT['ABS_POS'][0], 3)
-        print("motor 1 is " + str(bin(data_1)))
-        print("motor 2 is " + str(bin(data_2)))
-        
 
-        # Sign-extend the signed absolute position numbers to 32 bits
-        '''  We Don't need to sign extend the number      
-        if data_1 & 0x00400000:
-            data_1 |= 0xFF800000
-        else:
-            data_1 &= 0x001FFFFF
-        if data_2 & 0x00400000:
-            data_2 |= 0xFF800000
-        else:
-            data_2 &= 0x001FFFFF
-        '''
-        if motor == 1:
-            data = data_1
-        else:
-            data = data_2
-        return (self.GetTwosComplement(data, 22))
+#    def getPositions (self, motor):
+#        ## Get the positions stored in the drivers for the selected motor. Each
+#        #  driver stores its motor's position in a 22-bit register. If only
+#        #  one position is needed, it's efficient to get both because the
+#        #  drivers are daisy-chained on the SPI bus, so we have to send two
+#        #  commands and read a bunch of bytes of data anyway. 
+#        #  @return The current positions of the selected motor
+#        
+#        # Read (command 0x20) register 0x01, the current position
+#        [data_1, data_2] = self._get_params (self.COMMAND_DICT['GetParam']|self.REGISTER_DICT['ABS_POS'][0], 3)
+#        print("motor 1 is " + str(bin(data_1)))
+#        print("motor 2 is " + str(bin(data_2)))
+#        
+#
+#        # Sign-extend the signed absolute position numbers to 32 bits
+#        '''  We Don't need to sign extend the number      
+#        if data_1 & 0x00400000:
+#            data_1 |= 0xFF800000
+#        else:
+#            data_1 &= 0x001FFFFF
+#        if data_2 & 0x00400000:
+#            data_2 |= 0xFF800000
+#        else:
+#            data_2 &= 0x001FFFFF
+#        '''
+#        if motor == 1:
+#            data = data_1
+#        else:
+#            data = data_2
+#        return (self.GetTwosComplement(data, 22))
+
     '''-------------------------------------------------------'''
     def GetTwosComplement(data, length):
         if (data & (1 << (length - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
@@ -588,72 +589,71 @@ command can be given only when the previous motion command has been completed
             return False
          
     '''-------------------------------------------------------'''
-    def Print_Status(self, motor, status):
-        """ Formatted printing of status codes for the driver.
-
-            @arg @c motor  (int): the motor which the status is representing.
-            @arg @c status (int): the code returned by a GetStatus call.
-        """
-        # check error flags
-        print ('Driver ', str(motor), ' Status: ') #, bin(status))
-        print(status)
-        for bit_addr in range(7,15):
-            print('  Flag ', self.STATUS_DICT[bit_addr][0], ': ', end='')
-            # we shift a 1 to the bit address, then shift the result down again
-            if ((status[motor-1] & 1<<bit_addr)>>bit_addr)==self.STATUS_DICT[bit_addr][1]:
-                # the result should either be a 1 or 0. Which is 'ok' depends.
-                print("ok")
-            else:
-                print("Alert!")
-        
-        # check SCK_MOD
-        if status[motor-1] & (1<<15):
-            print('  Step-clock mode is on.')
-        else:
-            print("  Step-clock mode is off.")
-        
-        # check MOT_STATUS
-        if status[motor-1] & (1<<6):
-            if status[motor-1] & (1<<5):
-                print("  Motor is at constant speed.")
-            else:
-                print("  Motor is decelerating.")
-        else:
-            if status[motor-1] & (1<<5):
-                print("  Motor is accelerating.")
-            else:
-                print("  Motor is stopped.")
-                
-        # check DIR
-        if status[motor-1] & (1<<4):
-            print("  Motor direction is set to forward.")
-        else:
-            print("  Motor direction is set to reverse.")
+#    def Print_Status(self, motor, status):
+#        """ Formatted printing of status codes for the driver.
+#
+#            @arg @c motor  (int): the motor which the status is representing.
+#            @arg @c status (int): the code returned by a GetStatus call.
+#        """
+#        # check error flags
+#        print ('Driver ', str(motor), ' Status: ') #, bin(status))
+#        print(status)
+#        for bit_addr in range(7,15):
+#            print('  Flag ', self.STATUS_DICT[bit_addr][0], ': ', end='')
+#            # we shift a 1 to the bit address, then shift the result down again
+#            if ((status[motor-1] & 1<<bit_addr)>>bit_addr)==self.STATUS_DICT[bit_addr][1]:
+#                # the result should either be a 1 or 0. Which is 'ok' depends.
+#                print("ok")
+#            else:
+#                print("Alert!")
+#        
+#        # check SCK_MOD
+#        if status[motor-1] & (1<<15):
+#            print('  Step-clock mode is on.')
+#        else:
+#            print("  Step-clock mode is off.")
+#        
+#        # check MOT_STATUS
+#        if status[motor-1] & (1<<6):
+#            if status[motor-1] & (1<<5):
+#                print("  Motor is at constant speed.")
+#            else:
+#                print("  Motor is decelerating.")
+#        else:
+#            if status[motor-1] & (1<<5):
+#                print("  Motor is accelerating.")
+#            else:
+#                print("  Motor is stopped.")
+#                
+#        # check DIR
+#        if status[motor-1] & (1<<4):
+#            print("  Motor direction is set to forward.")
+#        else:
+#            print("  Motor direction is set to reverse.")
+#            
+#        # check BUSY
+#        if not (status[motor-1] & (1<<1)):
+#            print("  Motor is busy with a movement command.")
+#        else:
+#            print("  Motor is ready to recieve movement commands.")
+#            
+#        # check HiZ
+#        if status[motor-1] & 1:
+#            print("  Bridges are in high-impedance mode (disabled).")
+#        else:
+#            print("  Bridges are in low-impedance mode (active).")
+#        
+#        # check SW_EVEN flag
+#        if status[motor-1] & (1<<3):
+#            print("  External switch has been clicked since last check.")
+#        else:
+#            print("  External switch has no activity to report.")
+#        # check SW_F
+#        if status[motor-1] & (1<<2):
+#            print("  External switch is closed (grounded).")
+#        else:
+#            print("  External switch is open.")
             
-        # check BUSY
-        if not (status[motor-1] & (1<<1)):
-            print("  Motor is busy with a movement command.")
-        else:
-            print("  Motor is ready to recieve movement commands.")
-            
-        # check HiZ
-        if status[motor-1] & 1:
-            print("  Bridges are in high-impedance mode (disabled).")
-        else:
-            print("  Bridges are in low-impedance mode (active).")
-        
-        # check SW_EVEN flag
-        if status[motor-1] & (1<<3):
-            print("  External switch has been clicked since last check.")
-        else:
-            print("  External switch has no activity to report.")
-        # check SW_F
-        if status[motor-1] & (1<<2):
-            print("  External switch is closed (grounded).")
-        else:
-            print("  External switch is open.")
-            
-
 #setLoSpdOpt(boolean enable);
 #configSyncPin(byte pinFunc, byte syncSteps);
 #configStepMode(byte stepMode);
@@ -673,3 +673,4 @@ command can be given only when the previous motion command has been completed
 #setDecKVAL(byte kvalInput);
 #setRunKVAL(byte kvalInput);
 #setHoldKVAL(byte kvalInput);
+
