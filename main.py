@@ -4,14 +4,16 @@
 #  @author Robert Tam
 #  This program was written for an ME Senior Project.
 # -*- coding: utf-8 -*-
-"""
+
 def ImportSong():
     '''This function checks the piano board's five switches (the pins
     called Note0 to Note4) and converts those four binary inputs into an
     integer. With four switches available, the range of corresponding integer
     inputs should be 0 to 15 (1-16 if you add 1 to the final number) switches
     are numbered from left to right'''
-    
+    global XBeam
+    XBeam = 500
+"""    
 #    print("Importing Song/Piano Board Pattern")
     
     # The Piano Switch Board Pins numbered 0 to 4 from left to right, left most
@@ -116,6 +118,18 @@ def zero_flags():
     No input paramaters or returned values. Does require for the task_share.py
     file to be present and the main section of this program to have been run
     so that the buffers exist.'''
+    global ErrInit
+    global ErrSleep
+    global ErrCalibration
+    global ErrLeveling
+    global ErrAssembly
+    global ErrBoltCsv
+    global ErrCalCsv
+    global ErrPorbe
+    global ErrRailActR
+    global ErrRailActL
+    global XBeam
+    
     ErrInit=0
     ErrSleep=0
     ErrCalibration=0
