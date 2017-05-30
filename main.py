@@ -5,146 +5,210 @@
 #  This program was written for an ME Senior Project.
 # -*- coding: utf-8 -*-
 
+# importing modules for buffers and functions
+import Gantry
+import Probe
+import BeamActuator
+import setup
+from setup import ErrInit,\
+                    ErrSleep,\
+                    ErrCalibration,\
+                    ErrLeveling, \
+                    ErrAssembly, \
+                    ErrBoltCsv,\
+                    ErrCalCsv,\
+                    ErrGantry,\
+                    ErrProbe,\
+                    ErrRailActL,\
+                    ErrRailActR,\
+                    ErrBeamAct,\
+                    ErrFileCheck,\
+                    ErrSong,\
+                    XBeam,\
+                    zero_flags
+                    
 def ImportSong():
-    '''This function checks the piano board's five switches (the pins
-    called Note0 to Note4) and converts those four binary inputs into an
+    '''This function checks the piano board's last four switches (the pins
+    called Note1 to Note4) and converts those four binary inputs into an
     integer. With four switches available, the range of corresponding integer
-    inputs should be 0 to 15 (1-16 if you add 1 to the final number) switches
-    are numbered from left to right'''
-    global XBeam
-    XBeam = 500
-"""    
-#    print("Importing Song/Piano Board Pattern")
+    inputs should be 0 to 15 (1-16 if you add 1 to the final number)
     
-    # The Piano Switch Board Pins numbered 0 to 4 from left to right, left most
-    #   switch being Note0
-    Note0 = pyb.Pin (pyb.Pin.cpu.A14, mode = pyb.Pin.IN,
-                     pull = pyb.Pin.PULL_UP)
+    Ammendment: due to issues, this function has been basically deleted pending
+    future projects which fix the piano switchboard
+    '''
+    XBeam.put(500)
     
-    Note1 = pyb.Pin (pyb.Pin.cpu.A15, mode = pyb.Pin.IN,
-                     pull = pyb.Pin.PULL_UP)
-    
-    Note2 = pyb.Pin (pyb.Pin.cpu.C14, mode = pyb.Pin.IN,
-                     pull = pyb.Pin.PULL_UP)
-    
-    Note3 = pyb.Pin (pyb.Pin.cpu.C15, mode = pyb.Pin.IN,
-                     pull = pyb.Pin.PULL_UP)
-    
-    Note4 = pyb.Pin (pyb.Pin.cpu.H0, mode = pyb.Pin.IN,
-                     pull = pyb.Pin.PULL_UP)
+#    
+#    # Get Values from the switches and store into variables a, b, c, and d
+#    # NOTE: as with Note0, reading 0 means true on the switch
+#    if Note0.value() == 0:
+#        a = 1
+#    else:
+#        a = 0
+#    if Note1.value() == 0:
+#        b = 1
+#    else:
+#        b = 0
+#    if Note2.value() == 0:
+#        c = 1
+#    else:
+#        c = 0
+#    if Note3.value() == 0:
+#        d = 1
+#    else:
+#        d = 0
+#    if Note4.value() == 0:
+#        e = 1
+#    else:
+#        e = 0
+#        
+#    # Calculating a binary number from four binary input
+#    Number = (a*2**4 + b*2**3 + c*2**2 + d*2**1 + e*2**0) + 1
+#        
+#    # If the user has selected the combination of switches which correspond
+#    #   to 1-16, than input the X-Beam length into the buffer XBeam that 
+#    #   corresponds to that input. Additionally, if there is no input, than the
+#    #   system will return an error.
+#    if Number == 1:
+#        Length = 500
+#        
+#    elif Number == 2:
+#        ErrSong.put(1)
+#        
+#    elif Number == 3:
+#        ErrSong.put(1)
+#        
+#    elif Number == 4:
+#        ErrSong.put(1)
+#        
+#    elif Number == 5:
+#        ErrSong.put(1)
+#        
+#    elif Number == 6:
+#        ErrSong.put(1)
+#        
+#    elif Number == 7:
+#        ErrSong.put(1)
+#        
+#    elif Number == 8:
+#        ErrSong.put(1)
+#        
+#    elif Number == 9:
+#        ErrSong.put(1)
+#        
+#    elif Number == 10:
+#        ErrSong.put(1)
+#        
+#    elif Number == 11:
+#        ErrSong.put(1)
+#        
+#    elif Number == 12:
+#        ErrSong.put(1)
+#        
+#    elif Number == 13:
+#        ErrSong.put(1)
+#        
+#    elif Number == 14:
+#        ErrSong.put(1)
+#        
+#    elif Number == 15:
+#        ErrSong.put(1)
+#        
+#    elif Number == 16:
+#        ErrSong.put(1)
+#        
+#    # Note that with 5 switches, you can have up to 32 options. Add more elif
+#    #   statements.
+#        
+#    if ErrSong.get() == 0:
+#        XBeam.put(Length)
+#        return("No Error")
+#        
+#    elif ErrSong.get() == 1:
+#        f = open("Error Report.txt","w")
+#        f.write('''An error occured during the initilization phase\n\r
+#                The switch combination of the piano switch board does not correspond to any of\n\r
+#                registered X-Beam lengths.\n\r
+#                Recomendations:\n\r
+#                    1) Check your switch combination\n\r
+#                    2) Open ImportSong.py and check that the switch combination you've selected\n\r
+#                        has a corresponding X-Beam length.\n\r
+#                Note: Please remember to check that if you add an X-Beam Length to\n\r
+#                      ImportSong.py, check that the corresponding Calibration and BoltPattern\n\r
+#                      csv files are included''')
+#        f.close()
+#        return("Error Occured")
 
-    # Get Values from the switches and store into variables a, b, c, and d
-    # NOTE: as with Note0, reading 0 means true on the switch
-    if Note0.value() == 0:
-        a = 1
-    else:
-        a = 0
-    if Note1.value() == 0:
-        b = 1
-    else:
-        b = 0
-    if Note2.value() == 0:
-        c = 1
-    else:
-        c = 0
-    if Note3.value() == 0:
-        d = 1
-    else:
-        d = 0
-    if Note4.value() == 0:
-        e = 1
-    else:
-        e = 0
+def paramatarize():
     
-    ''' MAJOR ISSUE 
-    switch board switches 3 and 4, Notes 2 and 3 do not work, they 
-    are set to 0 for the program to work...'''
-    c = 0
-    d = 0
+    # Set the registers which need to be modified for the motor to go
+    # This value affects how hard the motor is being pushed
+    K_VAL = 80
+    Board1._set_par_1b ('KVAL_HOLD', K_VAL)
+    Board1._set_par_1b ('KVAL_RUN', K_VAL)
+    Board1._set_par_1b ('KVAL_ACC', K_VAL)
+    Board1._set_par_1b ('KVAL_DEC', K_VAL)
+    # Speed at which we transition from slow to fast V_B compensation
+    INT_SPEED = 1032 #3141
+    Board1._set_par_2b ('INT_SPEED', INT_SPEED)
+    # Acceleration and deceleration back EMF compensation slopes
+    ST_SLP = 25
+    Board1._set_par_1b ('ST_SLP', ST_SLP)
+    Board1._set_par_1b ('FN_SLP_ACC', ST_SLP)
+    Board1._set_par_1b ('FN_SLP_DEC', ST_SLP)
+    # Set the maximum speed at which motor will run
+    MAX_SPEED = 30
+    Board1._set_par_2b ('MAX_SPEED', MAX_SPEED)
+    # Set the maximum acceleration and deceleration of motor
+    ACCEL = 5
+    DECEL = 20
+    Board1._set_par_2b ('ACC', ACCEL)
+    Board1._set_par_2b ('DEC', DECEL)
     
-#    print("    Readings")
-#    print("    Note0: "+str(Note0.value())+" and a: "+str(a))
-#    print("    Note1: "+str(Note1.value())+" and b: "+str(b))
-#    print("    Note2: "+str(Note2.value())+" and c: "+str(c))
-#    print("    Note3: "+str(Note3.value())+" and d: "+str(d))
-#    print("    Note4: "+str(Note4.value())+" and e: "+str(e))
-#    print("    Note 2 and 3 are not working, values c and d have been set "+\
-#          "to 0")
+    # Set the number of Microsteps to use
+    SYNC_EN = 0x00
+    SYNC_SEL = 0x10
+    STEP_SEL = 8
+    Board1._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
+            
+    # Set the Stall Threshold
+    STALL_TH = 127
+    Board1._setStallThreshold(STALL_TH)
     
-    # Calculating a binary number from four binary input
-    Number = (a*2**4 + b*2**3 + c*2**2 + d*2**1 + e*2**0) + 1
+         # Set the registers which need to be modified for the motor to go
+            # This value affects how hard the motor is being pushed
+    K_VAL = 80
+    Board2._set_par_1b ('KVAL_HOLD', K_VAL)
+    Board2._set_par_1b ('KVAL_RUN', K_VAL)
+    Board2._set_par_1b ('KVAL_ACC', K_VAL)
+    Board2._set_par_1b ('KVAL_DEC', K_VAL)
+    # Speed at which we transition from slow to fast V_B compensation
+    INT_SPEED = 1032 #3141
+    Board2._set_par_2b ('INT_SPEED', INT_SPEED)
+    # Acceleration and deceleration back EMF compensation slopes
+    ST_SLP = 25
+    Board2._set_par_1b ('ST_SLP', ST_SLP)
+    Board2._set_par_1b ('FN_SLP_ACC', ST_SLP)
+    Board2._set_par_1b ('FN_SLP_DEC', ST_SLP)
+    # Set the maximum speed at which motor will run
+    MAX_SPEED = 20
+    Board2._set_par_2b ('MAX_SPEED', MAX_SPEED)
+    # Set the maximum acceleration and deceleration of motor
+    ACCEL = 5
+    DECEL = 12
+    Board2._set_par_2b ('ACC', ACCEL)
+    Board2._set_par_2b ('DEC', DECEL)
     
-#    print("    Read Combination: "+str(a)+str(b)+str(c)+str(d)+str(e)+\
-#          " = "+str(Number))
-        
-    # If the user has selected the combination of switches which correspond
-    #   to 1-16, than input the X-Beam length into the buffer XBeam that 
-    #   corresponds to that input. Additionally, if there is no input, than the
-    #   system will return an error.
-    Length = 0
-    if Number == 1:
-        Length = 500
-        
-    elif Number == 2:
-        ErrSong = 1
-        
-        
-    # Note that with 5 switches, you can have up to 32 options. Add more elif
-    #   statements.
-        
-    if ErrSong == 0:
-#        print("    X-Beam "+str(Length)+" selected")
-        XBeam = Length
-        return("No Error")
-        
-    elif ErrSong == 1:
-#        print("Selected Combination has no assotiated Length value")
-        f = open("Error Report.txt","w")
-        f.write('''An error occured during the initilization phase\n\r
-                The switch combination of the piano switch board does not correspond to any of\n\r
-                registered X-Beam lengths.\n\r
-                Recomendations:\n\r
-                    1) Check your switch combination\n\r
-                    2) Open ImportSong.py and check that the switch combination you've selected\n\r
-                        has a corresponding X-Beam length.\n\r
-                Note: Please remember to check that if you add an X-Beam Length to\n\r
-                      ImportSong.py, check that the corresponding Calibration and BoltPattern\n\r
-                      csv files are included''')
-        f.close()
-        return("Error Occured")
-"""
+    # Set the number of Microsteps to use
+    SYNC_EN = 0x00
+    SYNC_SEL = 0x10
+    STEP_SEL = 8
+    Board2._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
+            
+            # Set the Stall Threshold
+    STALL_TH = 127
+    Board2._setStallThreshold(STALL_TH)
 
-def zero_flags():
-    '''Function sets all error flag buffers to false aka 0 or its equivalent.
-    No input paramaters or returned values. Does require for the task_share.py
-    file to be present and the main section of this program to have been run
-    so that the buffers exist.'''
-    global ErrInit
-    global ErrSleep
-    global ErrCalibration
-    global ErrLeveling
-    global ErrAssembly
-    global ErrBoltCsv
-    global ErrCalCsv
-    global ErrPorbe
-    global ErrRailActR
-    global ErrRailActL
-    global XBeam
-    global ErrSong
-    
-    ErrInit=0
-    ErrSleep=0
-    ErrCalibration=0
-    ErrLeveling=0
-    ErrAssembly=0
-    ErrBoltCsv=0
-    ErrCalCsv=0
-    ErrPorbe=0
-    ErrRailActR=0
-    ErrRailActL=0
-    ErrSong=0
-    XBeam=0
-#    print("Flags Zeroed")
 
 def Mode():
     '''Function which is used to read and return the selection of the three
@@ -209,7 +273,8 @@ def FileCheck():
                 "l6470nucleo.py",
                 "encoder.py",
                 "BoltPattern500.csv",
-                "Calibration500.csv"]
+                "Calibration500.csv",
+                "task_share.py"]
                 
     # Retrieve the system directory information as a list of strings
     files = os.listdir()
@@ -283,7 +348,7 @@ def FileCheck():
                 else:
                     switch = 0
                 Time = 0
-        return("An Error Occured, please see the 'Error Report.txt' file")
+        return("Error Occured")
     else:
 #        print("File Check Done, no errors")
         return([files,FileList])
@@ -313,8 +378,6 @@ def ImportBoltPattern():
             of which side is to be bolted and the other containing positions
             relative to the gantry's zero position of where to move to.
     '''
-    global XBeam
-    global ErrBoltCsv
 #    print("Beginning to import BoltPatternXXX.csv")
     # Getting length value of the X-Beam from the buffer XBeam
     Input = XBeam
@@ -355,7 +418,6 @@ def ImportBoltPattern():
     i = 1
     for item in BoltSide:
         if item != "R" and item != "L":
-            ErrBoltCsv = 1
             string = "Error in "+FileName+", row 1 item "+str(i)+": '"+\
                         str(item)+"' is not a valid input"
             f.write(string)
@@ -366,13 +428,12 @@ def ImportBoltPattern():
         
     '''Check the values in the BoltData list. If there is an error, write
     to the Error Report text file.'''
-    print("Checking items indicating positions in the BoltData list")
+#    print("Checking items indicating positions in the BoltData list")
     i = 1
     for item in BoltData:
         try:
             float(item)
         except ValueError:
-            ErrBoltCsv = 1
             string = "Error in "+FileName+", row 2 item "+str(i)+": '"+\
                         str(item)+"' is not a valid input"
             f.write(string)
@@ -389,6 +450,7 @@ def ImportBoltPattern():
 #        print("    An error has occured, please refer to the "+\
 #        "'Error Report.txt' file")
         f.close()
+        ErrBoltCsv.put(1)
         return("Error Occured")
 
 def ImportCalibration():
@@ -414,8 +476,7 @@ def ImportCalibration():
             function returns a list of values'''            
                   
 #    print("Beginning to import CalibrationXXX.csv")
-    global ErrCalCsv
-    global XBeam
+    
 
     # Getting length value of the X-Beam from the buffer XBeam
     Input = XBeam
@@ -469,6 +530,7 @@ def ImportCalibration():
             f.write('\r\r\n')
         f.close()
 #        print("    Error Occured importing "+FileName)
+        ErrCalCsv.put(1)
         return("Error Occured")
     else:
         return('''Error Occured, error flag in ImportCalibration was not 0 or 1
@@ -499,37 +561,31 @@ def Lights_Sound_Action():
     Blink = 0               # Variable that says LEDs need to blink
     Stop = 0                # Variable that counts number of Go's pressed to 
                             #   exit function
-    global ErrGantry
-    global ErrProbe
-    global ErrBeamAct
-    global ErrSong
-    global ErrRailActR
-    global ErrRailActL
-    
-    if ErrGantry == 1:
+
+    if ErrGantry.get() == 1:
         # If the Gantry error flag is raised, tell system to turn on green and
         #   yellow LEDs, no blinking
         Green = 1
         Yellow = 1
 #        print("Gantry Error detected")
-    elif ErrProbe == 1:
+    elif ErrProbe.get() == 1:
         # If Probe flag raised, yellow and red LED, no blinking
         Yellow = 1
         Red = 1
 #        print("Probe Error detected")
-    elif ErrBeamAct == 1:
+    elif ErrBeamAct.get() == 1:
         # If beam actuator flag raised, green and red LED, no blinking
         Green = 1
         Red = 1
 #        print("Beam Actuator Error detected")
-    elif ErrSong == 1:
+    elif ErrSong.get() == 1:
         # If Song error flag raised, all LEDs on, blinking
         Green = 1
         Yellow = 1
         Red = 1
         Blink = 1
 #        print("Piano Switch Board Combination Error detected")
-    elif ErrRailActR==1 or ErrRailActL == 1:
+    elif ErrRailActR.get()==1 or ErrRailActL.get() == 1:
         # If Either rail actuator flags are raised
         Green = 1
         Yellow = 1
@@ -636,45 +692,27 @@ def ErrorHandler():
                   
     # There was no issues with all of the named error flags, check all of the
     #   other error flags
-    if ErrSong == 0 and       \
-       ErrBoltCsv == 0 and    \
-       ErrCalCsv == 0:
+    if ErrSong.get() == 0 and       \
+       ErrBoltCsv.get() == 0 and    \
+       ErrCalCsv.get() == 0:
                                    
         f = open("Error Report.txt","w")
-        
-        if ErrInit == 1:
-#            print("Error During initilization, writing error")
-            f.write("There was an error during the system initilization\r\r\n")
-        elif ErrSleep == 1:
-#            print("Error During sleep, writing error")
-            f.write("There was an error with the sleep mode\r\r\n")
-        elif ErrCalibration == 1:
-#            print("Error During calibration, writing error")
-            f.write("There was an error with the calibration mode\r\r\n")
-        elif ErrLeveling == 1:
-#            print("Error During Leveling, writing error")
-            f.write("There was an error with leveling the X-Beam during the"+
-                     " Assembly mode\r\r\n")
-        elif ErrAssembly == 1:
-#            print("Error During assembly, writing error")
-            f.write("There was an error with assembling the X-Beam during the"+
-                    " Assembly mode\r\r\n")
             
-        if ErrProbe == 1:
+        if ErrProbe.get() == 1:
 #            print("Error with probe, writing error")
             f.write("Probe was unable to take valid measurements")
-        elif ErrGantry == 1:
+        elif ErrGantry.get() == 1:
 #            print("Error with gantry, writing error")
             f.write("Gantry was unable to move to the destination")
-        elif ErrBeamAct == 1:
+        elif ErrBeamAct.get() == 1:
 #            print("Error with beam actuator, writing error")
             f.write("Beam Actuator was unable to move to the destination")
-        elif ErrRailActR == 1 or ErrRailActL == 1:
-            if ErrRailActR == 1 and ErrRailActL == 1:
+        elif ErrRailActR.get() == 1 or ErrRailActL.get() == 1:
+            if ErrRailActR.get() == 1 and ErrRailActL.get() == 1:
                 x = "Both rail actuators"
-            elif ErrRailActR == 1:
+            elif ErrRailActR.get() == 1:
                 x = "The right rail actuator"
-            elif ErrRailActL == 1:
+            elif ErrRailActL.get() == 1:
                 x = "The left rail actuator"
             print("error with the "+x)
             f.write(x+"Has attempted run past the maximum stroke length "+\
@@ -701,166 +739,6 @@ def callback(line):
     import pyb
     pyb.hard_reset()
 
-def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
-    '''Lower Probe, Take measurement, Check measurement, Raise the probe if no
-    error. If not, throw an error.
-    Function Inputs:
-        Limit is True or False, defaulting to False. If the Limit is False, the
-            function does not check teh value taken against the upper and lower
-            limits. If True, it does compare.
-    Function Outputs: Returns the value of the measurement taken. Otherwise
-            returns message "Error Occured" if the reading is outside the
-            given limits.
-            '''
-#    print("Taking measurement with probe")
-#    print("    Lowering probe")
-    # Move probe down
-    
-    tolerance = 0
-    previous = 0
-    while True:
-        # wait for readings from probe to change (delta) by the tolerance
-        #   amount
-        current = ProbeEncoder.read()
-        delta = current-previous
-#        print("        delta = "+str(delta))
-        if delta <= tolerance or delta >= -tolerance:
-#            print("    Probe met surface")
-            break
-        
-    
-    # Check Reading is within the limits if the Limit flag is true
-    Reading = ProbeEncoder.read()
-    if Limit == True:
-        if Reading > UpperLimit:
-#            print("    probe reading was above upper limit of readings")
-            ErrProbe = 1
-        elif Reading < LowerLimit:
-#            print("    probe reading was below lower limit of readings")
-            ErrProbe = 1
-
-#    print("    Raising probe")
-    # Move probe up
-    
-    while True:
-        # wait until the probe has fully withdrawn to the reference tick.
-        if ProbeReference.value() == 1:
-#            print("    Reference tick reached")
-            break
-    
-    # If there was or was not an error
-    if ErrProbe == 0:
-        print("    No error, exit")
-        # No error, return
-        return(Reading)
-    else:
-        # Error, return error message
-#        print("    Error Error Error Error")
-        return("Error Occured")
-        
-def Move_Gantry_To(Destination, probe = False):
-    '''Function which utalizes code from the l6470nucleo.py file to drive the
-    stepper motors.
-    
-    Function runs the gantry till it stalls (in which case the system throws an
-    error and waits for user input) or it reaches the destination in which case
-    it stops and exits the function.
-    
-    @param Destination is the input distance x in millimeters from the end of
-            the X-Beam you want to run to.
-    @param probe is True or False, defaulting to False if not called. If True,
-            the function will call the probe function to do one measurement
-            at the end of the move. If False, it will not do that measurement.
-    @return Returns one of two things. If the probe == True, the system will
-            retrn the value read by the probe at the end. If not, then the
-            function will return "Done".'''
-    
-    DistancePerRev = 2          # Variable indicating the distance traveled
-                                #   per revolution of the stepper motor,
-                                #   dependent on the leadscrew pitch. Value is
-                                #   in mm
-    StepsPerRev = 200*8         # Variable indicating the number of steps
-                                #   per revolution for the stepper motor. This
-                                #   is # of microsteps per revolution.
-    xOffset = 00000     # Distance from gantry home position to the closest end
-                        #   of the X-Beam. Absolute distsnce in mm
-    xLimit = 00000      # Maximum travel of the gantry from the end of the
-                        #   X-Beam to the Lead Screw Raiser minus the gantry 
-                        #   width. Absolute units in mm.
-    #ISSUE See above 2 variables
-    global ErrGantry
-    
-#    print("Moving Gantry to position x: "+str(Destination))
-#    print("    Probe at the end of the move? "+str(probe))
-    # Check that Destination is not outside of the limits
-    if Destination <= -xOffset:
-        # If the destination is less than -xOffset, then the destination is 
-        #   behind the home position which would push the system against the 
-        #   housing and possible break the switch.
-#        print("    Error Occured moving the Gantry, Destination behind home")
-        ErrGantry = 1
-        return("Error Occured")
-    elif Destination  >= xLimit:
-        # If the destination is greater than the xLimit, the gantry is running
-        #   the risk of crashing against the leadscrew bearing end support
-        #   raiser.
-#        print("    Error Occured moving the Gantry")
-        ErrGantry = 1
-        return("Error Occured")
-#    print('''    Destination of Gantry within limits, Destination past'''+\
-#          '''farthest position''')
-    
-    # Convert Destination in mm to revolutions to steps
-    Destination = ((Destination + xOffset)/DistancePerRev)*StepsPerRev
-#    print("    Destination converted to "+str(Destination)+" number of steps")
-    
-    # Move to the new value of Destination
-#    print("    Moving Gantry to Destination")
-    Board1.GoTo(1,Destination)
-    
-    # Wait for stall or finish flag
-#    print("    waiting for stall or completion of move command")
-    while True:
-        if Busy_Pin.value() == 1:
-            # if finish, exit the function
-#            print("    Gantry in position, exit loop")
-            break
-        elif Board1.isStalled(2) == True:
-            # if stall, stop gantry, throw error and return
-#            print('''    Error Occured moving the Gantry to position. '''+\
-#                 "Gantry stalled out")
-            ErrGantry = 1
-            return("Error Occured")
-    
-    # If done moving gantry and probe option is true, take measurement
-    if probe == True:
-#        print("    Probe part of Move_Gantry_to() function called")
-        # check the error flags to determine what mode the machine is in.
-        #   if it is in calibration, then the probe does not need limits on
-        #   its measurement. If it is leveling, then it does.
-        if ErrCalibration == 1:
-#            print("    Probe called for Calibration Mode")
-            reading = Probe()
-        elif ErrAssembly == 1 or ErrLeveling == 1:
-#            print("    Probe called for Leveling and Assembly Mode")
-            UpprLimit = 1000
-            LwrLimit = -1000
-            reading = Probe(Limit = True, UpperLimit = UpprLimit,
-                            LowerLimit = LwrLimit)
-
-        if type(reading) == "Error Occured":
-            # Error occured, but should have been solved as the Probe function
-            #   shouldn't be able to finish if there was an error.
-#            print("    Error occured with probe in the Move_Gantry_to()")
-            return("Error Occured")
-        else:
-#            print("    No error occured with probe in the Move_Gantry_to()")
-            return(reading)
-    # Else if the gantry is done moving and probe option in false, return
-    elif probe == False:
-#        print("    Probe part of Move_Gantry_to() function not called")
-        return("Done")
-
 def Home(*arg):
     '''Function Homes parts as indicated by the *arg which is a tuble of
     strings of whatever the user inputs. For reference, google Python optional
@@ -879,8 +757,6 @@ def Home(*arg):
         None'''
     
 #    print("Beginning to Home system")
-    global ErrGantry
-    global ErrBeamAct
     
     # Set the stall thresholds of the stepper drivers to the maximum
     #   ammount (which they should be already)
@@ -889,22 +765,7 @@ def Home(*arg):
     
     # First Home Probe if Probe or all is listed in *arg
     if ('Probe' in arg) or ('All' in arg):
-#        print("    Homing the Probe")
-        # If the probe registers at home, do nothing. If not, retract probe
-        #   is at home
-        if ProbeReference.value() != 1:
-            # False, Retract Probe until it is at the reference tick
-#            print("        Probe is not at reference tick, raise probe")
-            # Move probe up
-            
-            # While loop to check the probe for when its reaches reference
-            #   tick
-            while True:
-                if ProbeReference.value == 1:
-                    # True
-#                    print("        Probe is at reference tick, go to next "+\
-#                          "object")
-                    break
+        Probe.Home()
             
     # Now Home Righ and Left rail actuator
 #    print("    Homing one or both rail actuators")
@@ -924,7 +785,7 @@ def Home(*arg):
                 
         # Check home status in while loop
         while True:
-            if Busy_Pin.value() == 1:
+            if Board2.isBusy(1) == 1:
                 # Both rail actuators are @ their switches, continue.
 #                print("        actuator switches have been pressed, busy "+\
 #                      "pin high")
@@ -944,7 +805,7 @@ def Home(*arg):
         
         # Check status via while loop
         while True:
-            if Busy_Pin.value() == 1:
+            if Board2.isBusy(1) == 1:
 #                print("        actuator switches have been pressed, busy "+\
 #                      "pin high")
                 Board2.HardHiZ(1)
@@ -962,84 +823,11 @@ def Home(*arg):
         
     # Home Gantry
     if ('Gantry' in arg) or ('All' in arg):
-#        print("    Homing Gantry")
-        # Home Gantry Code. +/- 400 is the max speed of the gantry
-#        print("        Gantry GoUntil switch command")
-        Board1.GoUntil(2,-400)
-        
-        # Check home status in while loop
-        while True:
-            if Busy_Pin.value() == 1:
-                # gantry at switch, continue.
-#                print("        Gantry completed GoUntil Command")
-                break
-            elif Board1.isStalled(2) == True:
-                # motor stalled, return an error and set flag
-                Board1.HardHiZ(2)
-#                print("        Gantry Stalled during Home command")
-#                print("        ERROR ERROR ERROR, return error")
-                ErrGantry = 1
-                return("Error Occured")
-
-        # Release switch for gantry
-#        print("        releasing switch for gantry")
-        Board1.ReleaseSW(2,1)
-
-        # Check home status in while loop
-        while True:
-            if Busy_Pin.value() == 2:
-                # Both rail actuators are homed, continue.
-#                print("        Gantry completed ReleaseSW Command")
-                Board1.HardHiZ(2)
-                break
-            elif Board1.isStalled(2) == True:
-                # motor stalled, return an error and set flag
-                Board1.HardHiZ(2)
-#                print("        Gantry Stalled during Home command")
-#                print("        ERROR ERROR ERROR, return error")
-                ErrGantry = 1
-                return("Error Occured")
+        Gantry.Home()
         
     # Home Beam Actuator
     if ('Bact' in arg) or ('All' in arg):
-#        print("    Homing Beam Actuator")
-        # Home beam actuator Code.
-        Board1.GoUntil(1,-400)
-        
-        # Check home status in while loop
-        while True:
-            if Busy_Pin.value() == 1:
-                # Both rail actuators are homed, continue.
-#                print("        Beam Actuator completed GoUntil Command")
-                break
-            elif Board1.isStalled(1) == True:
-                # motor stalled, return an error and set flag
-                Board1.HardHiZ(1)
-#                print("        Beam Actuator Stalled during Home command")
-#                print("        ERROR ERROR ERROR, return error")
-                ErrBeamAct = 1
-                return("Error Occured")
-
-        # Release switch for beam actuator
-        Board1.ReleaseSW(1,1)
-
-        # Check home status in while loop
-        while True:
-            if Busy_Pin.value() == 1:
-                # beam actuator homed, continue.
-#                print("        Beam Actuator completed ReleaseSW Command")
-                Board1.HardHiZ(1)
-                break
-            elif Board1.isStalled(1) == True:
-                # motor stalled, return an error and set flag
-                Board1.HardHiZ(1)
-#                print("        Beam Actuator Stalled during Home command")
-#                print("        ERROR ERROR ERROR, return error")
-                ErrBeamAct = 1
-                return("Error Occured")
-                
-    # No other objects to home, exit funciton
-    return("Done")
+        BeamActuator.Home()
         
 def Calibration_Mode():
     '''This function directs the XBAS machine to calibrate a machine csv file
@@ -1052,7 +840,6 @@ def Calibration_Mode():
     '''
                   
 #    print("Beginning Calibration Mode")
-    global ErrCalibration
     
     # Variable switch is used to identify if this is the first time running
     #   through this program or not.
@@ -1072,7 +859,7 @@ def Calibration_Mode():
     while True:            
         
         # Set Error Flag fir this mode
-        ErrCalibration = 1
+        ErrCalibration.put(1)
         
         # 2nd Layer. System will stay in this loop unless an error occurs or
         #   the system finishes calibration.
@@ -1126,7 +913,6 @@ def Calibration_Mode():
             #   and user must hit go twice(once to turn sound off, once to
             #   resume). After error, return to the pre-calibration stage by
             #   breaking from the 2nd loop back to the 1st loop.
-            from ImportSong import ImportSong
             Output = ImportSong()
             if Output == "Error Occrured":
                 # Error occured, handle the error, then break out of the 2nd 
@@ -1153,7 +939,7 @@ def Calibration_Mode():
             
             # Move Gantry to the near side
 #            print("Moving Gantry to the near side for calibration purposes")
-            Output = Move_Gantry_To(NearSide, probe = False)
+            Output = Gantry.Move(NearSide, probe = False)
             
             # Check output for if an error occured. If no error occured, the
             #   function should have returned a number indicating the
@@ -1193,7 +979,7 @@ def Calibration_Mode():
             
             # Calue of NearSide has been stored, now for FarSide
 #            print("Moving Gantry to the Farside for Calibration Purpose")
-            Output = Move_Gantry_To(FarSide, probe = False)
+            Output = Gantry.Move(FarSide, probe = False)
             
             # Check output for if an error occured. If no error occured, the
             #   function should have returned a number indicating the
@@ -1271,7 +1057,6 @@ def Leveling_Mode():
     '''
 
 #    print("Beginning Leveling half of the Assembly Mode")
-    global ErrLeveling
     
     # Variable switch indicates if this is the first time the code is
     #   running through the code. This is for the purpose of skipping
@@ -1283,7 +1068,7 @@ def Leveling_Mode():
     while True:
         
         # Set error flag for this mode
-        ErrLeveling = 1
+        ErrLeveling.put(1)
         
         # While Loop 2nd Layer
         while True:
@@ -1342,7 +1127,6 @@ def Leveling_Mode():
             YellowLED.high()
             
             # User has hit Go, read the piano board via ImportSong()
-            from ImportSong import ImportSong
             Output = ImportSong()
             
             # Check Output for if an error occured
@@ -1383,7 +1167,7 @@ def Leveling_Mode():
                 
             # Move the Gantry to the far side and take the first measurement
 #            print("Moving Gantry to far side and take measurement")
-            Output = Move_Gantry_To(FarSide, probe = True)
+            Output = Gantry.Move(FarSide, probe = True)
             
             # Check function output
             if Output == 'Error Occured':
@@ -1396,7 +1180,7 @@ def Leveling_Mode():
             
             # Move the Gantry to the near side and take the first measurement
 #            print("Moving Gantry to near side and take measurement")
-            Output = Move_Gantry_To(NearSide, probe = True)
+            Output = Gantry.Move(NearSide, probe = True)
             
             # Check function output
             if Output == 'Error Occured':
@@ -1421,7 +1205,7 @@ def Leveling_Mode():
             
             # Actuate X-Beam levveling actuator and measure
 #            print("Actuate X-Beam actuator")
-            Output = Move_Beam_Actuator_to((NearLevel - FarLevel)/x,
+            Output = BeamActuator.Move((NearLevel - FarLevel)/x,
                                            probe = True)
             
             # Check output
@@ -1444,7 +1228,7 @@ def Leveling_Mode():
                 
                 # Actuate X-Beam levveling actuator and measure
 #                print("X-Beam not leveled, re-attempt leveling with actuator")
-                Output = Move_Beam_Actuator_to((NearLevel - FarLevel)/x,
+                Output = BeamActuator.Move((NearLevel - FarLevel)/x,
                                                Probe = True)
                 
                 # Check output
@@ -1477,15 +1261,13 @@ def TorqueDown(Input):
         None'''
     
 #    print("Beginning to Toque Down")
-    global ErrRailActL
-    global ErrRailActR
-    global ErrAssembly
+
     # Rail Actuators constants
     DistancePerStep = .0079375 # mm linear travel per step
     
     # Position above rails in mm away from the motor. Does not have
     #   to be very accurate (+/- 1mm)
-    PositionAboveRails = XXX # mm is the distance we determined too
+    PositionAboveRails = 10 # mm is the distance we determined too
                             # small for human fingers
     # Covert PositionAboveRails from distance in mm to steps for the 
     #   drivers
@@ -1493,7 +1275,7 @@ def TorqueDown(Input):
     
     # Calculating position above granite from the motor just as with
     #   PositionAboveRails
-    PositionAboveGranite = XXX
+    PositionAboveGranite = 10
     PositionAboveGranite = PositionAboveGranite / DistancePerStep
     
     # 1st Layer while loop
@@ -1536,7 +1318,7 @@ def TorqueDown(Input):
                 error = 1
                 break
             
-            elif Busy_Pin.value() == 1:
+            elif Board2.isBusy(2) == 1:
                 # Check for completion (Done flag false), exit with no
                 #   error called
 #                print("    actuator in position above rails")
@@ -1567,15 +1349,15 @@ def TorqueDown(Input):
         # 2nd layer while loop checking destination and stall
         #   flags as before.
         while True:  
-            if Busy_Pin.value() == 1:
+            if Board2.isBusy(2) == 1:
                 # Check for completion, call error if actuator moved
                 #   to destination succesfully
                 if Input == "L":
 #                    print("    left actuator reached destination, error.")
-                    ErrRailActL = 1
+                    ErrRailActL.put(1)
                 if Input == "R":
 #                    print("    right actuator reached destination, error.")
-                    ErrRailActR = 1
+                    ErrRailActR.put(1)
                 break
             if Board2.isStalled(1) == True or Board2.isStalled(2) == True:
                 # Left or right actuator stalled, move on to next
@@ -1592,7 +1374,6 @@ def TorqueDown(Input):
                     SolenoidRightPin.low()
         
                 # Import Time so system can wait for stuff to finish
-                import utime
 
                 # Wait for solenoids to extend
                 utime.sleep(100)
@@ -1640,7 +1421,7 @@ def TorqueDown(Input):
         
         # Error Handling and set mode error back
         ErrorHandler()
-        ErrAssembly = 1
+        ErrAssembly.put(1)
         # End of 1st layer, resume at beginning 
 
 def Assembly_Mode():
@@ -1653,10 +1434,9 @@ def Assembly_Mode():
     '''
     
 #    print("Beginning Assembly half of the assembly mode")
-    global ErrAssembly
     
     # Set Error Flag for mode
-    ErrAssembly = 1
+    ErrAssembly.put(1)
     
     # Beginning of the while loop for importing the data stored in 
     #   BoltPatternXXX.csv
@@ -1686,14 +1466,14 @@ def Assembly_Mode():
             # Run Gantry to position
 #            print("Moving gantry to position #"+str(counter)+": "+\
 #                  str(BoltData(counter)))
-            Output = Move_Gantry_to(BoltData(counter))
+            Output = Gantry.Move(BoltData(counter))
             
             # Check output of the function for error
             if Output == "Error Occured":
                 # Error Occured
 #                print("error occured moving ganty, handling error")
                 ErrorHandler()
-                ErrAssembly = 1
+                ErrAssembly.put(1)
             else:
                 # No Error Occured
 #                print("Gantry successfully moved, "+str(counter)+"/"+\
@@ -1722,8 +1502,6 @@ def Sleep_Mode(Input):
     Function Outputs:
         Time spent in the sleep mode after if finishes homing with no issues.
     '''
-    import utime
-    global ErrSleep
     
     # Turn all lights and sounds off, then turn on yellow lED
     Lights_Sound_Off()
@@ -1731,7 +1509,7 @@ def Sleep_Mode(Input):
     
     # Set the sleep mode error flag buffer to 1 so that if an issue occurs, the
     #   flag is already set.
-    ErrSleep = 1
+    ErrSleep.put(1)
     
     # Turn all lights and sounds off, then turn on green lED
     Lights_Sound_Off()
@@ -1741,13 +1519,13 @@ def Sleep_Mode(Input):
     #   1) User hits go
     #   2) User changes the system mode to something that isn't the sleep mode
 #    print("Sleep mode pre-stage")
-    Timer = 0                   # Creating a timer variable
-    Start = utime.ticks_ms()    # Creating a starting reference time
+#    Timer = 0                   # Creating a timer variable
+#    Start = utime.ticks_ms()    # Creating a starting reference time
     while True:
-        if Timer > 600000:  # 10 min * 60s/min * 1000ms/s
-#            print("Timed Out, going to sleep")
-            break
-        elif Go() == 1:
+#        if Timer > 600000:  # 10 min * 60s/min * 1000ms/s
+##            print("Timed Out, going to sleep")
+#            break
+        if Go() == 1:
 #            print("Go pressed, going to sleep")
             break
         elif Mode() != 2:
@@ -1755,9 +1533,9 @@ def Sleep_Mode(Input):
             return(1000)
         # increment Timer
 #        print("Time in Sleep pre-stage: "+str(Timer)+" ms")
-        Current = utime.ticks_ms()
-        Timer = Current - Start + Timer
-        Start = Current
+#        Current = utime.ticks_ms()
+#        Timer = Current - Start + Timer
+#        Start = Current
     
     # User must have hit go to have reached this point of the program. Turn of
     #   lights, turn yellow LED, then enter the new while loop that will try to
@@ -1788,8 +1566,8 @@ def Sleep_Mode(Input):
                 break
         
         # Reset Timer Clock
-        Timer = 0
-        Start = utime.ticks_ms()
+#        Timer = 0
+#        Start = utime.ticks_ms()
         
     # Turn Ligths and Sounds off.
     Lights_Sound_Off()
@@ -1803,35 +1581,32 @@ def Sleep_Mode(Input):
             #   time, and exit the sleep function while returning time spent in
             #   sleep mode
             ErrSleep.put(0)
-            Current = utime.ticks_ms()
-            Timer = Timer + Current-Start
+#            Current = utime.ticks_ms()
+#            Timer = Timer + Current-Start
 #            print("User has changed the mode, waking up")
-            return(Timer)
-        elif Mode() == 2 and Timer < 600:
-            # User has not selected another mode, increment the timer and sleep
-            #   for 500ms minus how long it took to do get the current time.
-            #   Also, if Timer > 600ms, the Timer will stop incrementing to
-            #   prevent possible issues.
-            Current = utime.ticks_ms()
-            Timer = Timer + Current-Start
-            if 500-(Current-Start) >= 0:
-                utime.sleep_ms(500-(Current-Start))
-            Start = Current
+            return(600)
+#        elif Mode() == 2 and Timer < 600:
+#            # User has not selected another mode, increment the timer and sleep
+#            #   for 500ms minus how long it took to do get the current time.
+#            #   Also, if Timer > 600ms, the Timer will stop incrementing to
+#            #   prevent possible issues.
+#            Current = utime.ticks_ms()
+#            Timer = Timer + Current-Start
+#            if 500-(Current-Start) >= 0:
+#                utime.sleep_ms(500-(Current-Start))
+#            Start = Current
 #            print("shh, i've been asleep for "+str(Timer)+" ms")
-    
 #//////////////////////////////////////////////////////////////////////////////
 '''                              Main Program                               '''
 #//////////////////////////////////////////////////////////////////////////////
 #print("Hello World")
+import pyb
+import utime
 
 # Pin Definition
 #print("Creating pins")
-import pyb
 
 # Notable stepper driver pins
-# Busy pin goes high when motor stops
-Busy_Pin = pyb.Pin (pyb.Pin.cpu.C0, mode = pyb.Pin.OUT_PP, 
-                      pull = pyb.Pin.PULL_DOWN)
 
 # LED Pin Definition
 RedLED = pyb.Pin (pyb.Pin.cpu.C11, mode = pyb.Pin.OUT_PP, 
@@ -1879,29 +1654,6 @@ ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 adc = pyb.ADC(ThreeSwitch_Pin)
 ThreeSwitch = adc.read
 
-'''Probe Pins'''
-#   H1 is the referencetick
-ProbeReference = pyb.Pin(pyb.Pin.cpu.H1, mode = pyb.Pin.IN,
-                         pull = pyb.Pin.PULL_DOWN)
-
-#   B9 high sends the probe up if B8 is low
-RaisePin = pyb.Pin(pyb.Pin.cpu.B9, mode = pyb.Pin.OUT_PP,
-                   pull = pyb.Pin.PULL_DOWN)
-
-#   B8 high sends the probe down if B9 is low
-LowerPin = pyb.Pin(pyb.Pin.cpu.B8, mode = pyb.Pin.OUT_PP,
-                   pull = pyb.Pin.PULL_DOWN)
-
-def MoveProbe(Input):
-    if Input == "up":
-        RaisePin.high()
-        LowerPin.low()
-    elif Input == "down":
-        RaisePin.low()
-        LowerPin.high()
-    else:
-        RaisePin.high()
-        LowerPin.high()
 # Check Files
 Output = FileCheck()
 
@@ -1920,15 +1672,6 @@ if type(Output)==str:
 # If there was no error, create all items
 #print("creating class objects")
 
-# Encoder Pins and Object for the Probe
-#   C6 is encoder ch1
-#   C7 is encoder ch2
-#   ProbeEncoder is a Quadrature Encoder Object 
-import encoder as enc
-pinC6 = pyb.Pin(pyb.Pin.cpu.C6, pyb.Pin.AF_PP,af=3)
-pinC7 = pyb.Pin(pyb.Pin.cpu.C7, pyb.Pin.AF_PP,af=3)
-tim8 = pyb.Timer (8,freq=1000)
-ProbeEncoder = enc.Quad_Encoder(pinC6,pinC7,tim8)
 
 '''Stepper Driver pin and  object creations'''
 import l6470nucleo                  # Import file
@@ -1937,96 +1680,11 @@ ncs1= pyb.Pin(pyb.Pin.cpu.A10)      # cs_pin for board 1
 ncs2= pyb.Pin(pyb.Pin.cpu.A4)       # cs_pin for board 2
 Board1 = l6470nucleo.Dual6470(1,ncs1,SCK) # Controls the Gantry (2) and
                                           # Beam Actuator (1)
-     # Set the registers which need to be modified for the motor to go
-        # This value affects how hard the motor is being pushed
-K_VAL = 80
-Board1._set_par_1b ('KVAL_HOLD', K_VAL)
-Board1._set_par_1b ('KVAL_RUN', K_VAL)
-Board1._set_par_1b ('KVAL_ACC', K_VAL)
-Board1._set_par_1b ('KVAL_DEC', K_VAL)
-# Speed at which we transition from slow to fast V_B compensation
-INT_SPEED = 1032 #3141
-Board1._set_par_2b ('INT_SPEED', INT_SPEED)
-# Acceleration and deceleration back EMF compensation slopes
-ST_SLP = 25
-Board1._set_par_1b ('ST_SLP', ST_SLP)
-Board1._set_par_1b ('FN_SLP_ACC', ST_SLP)
-Board1._set_par_1b ('FN_SLP_DEC', ST_SLP)
-# Set the maximum speed at which motor will run
-MAX_SPEED = 1
-Board1._set_par_2b ('MAX_SPEED', MAX_SPEED)
-# Set the maximum acceleration and deceleration of motor
-ACCEL = 5
-DECEL = 12
-Board1._set_par_2b ('ACC', ACCEL)
-Board1._set_par_2b ('DEC', DECEL)
-
-# Set the number of Microsteps to use
-SYNC_EN = 0x00
-SYNC_SEL = 0x10
-STEP_SEL = 8
-Board1._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
-        
-        # Set the Stall Threshold
-STALL_TH = 64
-Board1._setStallThreshold(STALL_TH)
 Board2 = l6470nucleo.Dual6470(1,ncs2,SCK) # Controls Left (1) and Right
                                           # (2) rail actuators
-                                              # Beam Actuator (1)
-     # Set the registers which need to be modified for the motor to go
-        # This value affects how hard the motor is being pushed
-K_VAL = 80
-Board2._set_par_1b ('KVAL_HOLD', K_VAL)
-Board2._set_par_1b ('KVAL_RUN', K_VAL)
-Board2._set_par_1b ('KVAL_ACC', K_VAL)
-Board2._set_par_1b ('KVAL_DEC', K_VAL)
-# Speed at which we transition from slow to fast V_B compensation
-INT_SPEED = 1032 #3141
-Board2._set_par_2b ('INT_SPEED', INT_SPEED)
-# Acceleration and deceleration back EMF compensation slopes
-ST_SLP = 25
-Board2._set_par_1b ('ST_SLP', ST_SLP)
-Board2._set_par_1b ('FN_SLP_ACC', ST_SLP)
-Board2._set_par_1b ('FN_SLP_DEC', ST_SLP)
-# Set the maximum speed at which motor will run
-MAX_SPEED = 1
-Board2._set_par_2b ('MAX_SPEED', MAX_SPEED)
-# Set the maximum acceleration and deceleration of motor
-ACCEL = 5
-DECEL = 12
-Board2._set_par_2b ('ACC', ACCEL)
-Board2._set_par_2b ('DEC', DECEL)
+                                          # Beam Actuator (1)
+paramatarize()
 
-# Set the number of Microsteps to use
-SYNC_EN = 0x00
-SYNC_SEL = 0x10
-STEP_SEL = 8
-Board2._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
-        
-        # Set the Stall Threshold
-STALL_TH = 64
-Board2._setStallThreshold(STALL_TH)
-#print("Importing task share")
-#import task_share
-'''Variable Buffer Creation'''
-#print("Buffer object creation")
-
-global ErrInit
-global ErrSleep
-global ErrCalibration
-global ErrLeveling
-global ErrAssembly
-global ErrBoltCsv
-global ErrCalCsv
-global ErrPorbe
-global ErrRailActR
-global ErrRailActL
-global ErrSong
-global XBeam
-
-# Issues with memory space have resulted in the deletion of ImportSong(). 
-#   Variable XBeam which is defined by ImportSong() is now set to 500.
-XBeam = 500
 
 # The same as the Go pin, but greating a short function call for the emergency
 #   stop button. This pin is defined last as to prevent memory issues found
@@ -2041,7 +1699,7 @@ extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_UP,
 
 # Zero the above buffers
 zero_flags()
-
+"""
 # Turn on only the yellow LED
 Lights_Sound_Off()
 YellowLED.high()
@@ -2052,7 +1710,7 @@ YellowLED.high()
 # Set Timer measured in milliseconds. Initially set at 600 so the system
 #   homes the first time round.
 Timer = 600
-'''
+
 #print("Beginning main program")
 # 1st Layer while loop
 while True:
@@ -2077,10 +1735,10 @@ while True:
                 break
             # End of 'home loop'
         
-        # Create Timer Variables
-        import utime
-        Start = utime.ticks_ms()
-        Timer = 0
+#        # Create Timer Variables
+#        import utime
+#        Start = utime.ticks_ms()
+#        Timer = 0
         
         # Turn on the Green Light
         Lights_Sound_Off()
@@ -2105,7 +1763,7 @@ while True:
                 
             if Mode() == 2:
                 # If switch is in 2nd position...
-                Timer = Sleep_Mode()
+                Timer = Sleep_Mode(600)
                 
                 # break out of 2nd layer back to 1st layer
                 break
@@ -2120,16 +1778,16 @@ while True:
                 
                 # Set Timer > 500 so the system homes after the assembly
                 #   mode
-                Timer > 600
+                Timer = 600
                 
                 # break out of 2nd layer back to 1st layer
                 break
             
             # Increment Timer if no mode is selected
-            Current = utime.ticks_ms()
-            Timer = (Current - Start) + Timer
+#            Current = utime.ticks_ms()
+#            Timer = (Current - Start) + Timer
             
             # End of the 2nd Layer
         
         # End of 1st Layer
-'''
+        """

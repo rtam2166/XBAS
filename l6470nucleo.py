@@ -590,11 +590,18 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
     
     def isStalled(self, motor):
         status = self.GetStatus(1,verbose = 0)
-        if ((status[motor-1]&(1<<13) == 0) or (status[motor-1]&(1<<14) == 0)):
+        if ((status[motor-1]&(1<<13) == 0) and (status[motor-1]&(1<<14) == 0)):
+#            if status[2-1] & (1<<6) == True and status[2-1] & (1<<5) == True:
             return True
         else:
             return False
-         
+            
+    def isBusy(self,motor):
+        status = self.GetStatus(1,verbose = 0)
+        if (status[motor-1] & (1<<1)) == 0:
+            return(True)
+        else:
+            return(False)
     '''-------------------------------------------------------'''
     def Print_Status(self, motor, status):
         """ Formatted printing of status codes for the driver.
@@ -660,7 +667,8 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
             print("  External switch is closed (grounded).")
         else:
             print("  External switch is open.")
-            
+
+
 #setLoSpdOpt(boolean enable);
 #configSyncPin(byte pinFunc, byte syncSteps);
 #configStepMode(byte stepMode);
