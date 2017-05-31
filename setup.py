@@ -134,7 +134,12 @@ def FileCheck():
 
             
 def paramatarize():
-    
+    '''Function paramatrizes the l6470nucleo.Dual6470 objects
+    Function Inputs:
+        None
+    Function Outputs:
+        None
+        '''
     # Set the registers which need to be modified for the motor to go
     # This value affects how hard the motor is being pushed
     K_VAL = 80
@@ -204,6 +209,21 @@ def paramatarize():
     Board2._setStallThreshold(STALL_TH)
     
 def DCMotor(Side,Dir):
+    '''Function for running the DC motors
+    Function Inputs:
+        Side can be any of the following and indicates which DC motor
+            is being called upon.
+            1) "Left", "left", "l", and "L" calls on the left motor
+            2) "Right", "right", "r", and "R" calls on the right motor
+            3) Anything else turns off both motors regardless of the 
+                value of Dir
+        Dir Indicates if the DC motors selected by Side is turned on or
+            off. Takes the following inputs:
+            1) "On" or "on" will turn the motor selected on
+            2) "Off" or "off" will turn the selected motor off
+    Function Outputs:
+        None
+        '''
     if Side == "Left" or Side == "left" or Side == "l" or Side == "L":
         if Dir == "on" or Dir == "On":
             DCMotorLeftPin.low()
@@ -219,6 +239,21 @@ def DCMotor(Side,Dir):
         DCMotorRightPin.high()
             
 def Solenoid(Side,Dir):
+    '''Function for running the solenoids
+    Function Inputs:
+        Side can be any of the following and indicates which solenoid
+            is being called upon.
+            1) "Left", "left", "l", and "L" calls on the left solenoid
+            2) "Right", "right", "r", and "R" calls on the right solenoid
+            3) Anything else turns off both solenoids regardless of the 
+                value of Dir
+        Dir Indicates if the Solenoid selected by Side is turned on or
+            off. Takes the following inputs:
+            1) "On" or "on" will turn the solenoid selected on
+            2) "Off" or "off" will turn the selected solenoid off
+    Function Outputs:
+        None
+        '''
     if Side == "Left" or Side == "left" or Side == "l" or Side == "L":
         if Dir == "on" or Dir == "On":
             SolenoidLeftPin.low()
@@ -233,9 +268,22 @@ def Solenoid(Side,Dir):
         SolenoidLeftPin.high()
         SolenoidRightPin.high()
             
-def Buzzer(Input):
+def Buzzer(Input,duty = 100):
+    '''Function runs the buzzer, turning it on or off depending on the inputs.
+    Function Inputs:
+        Input can be one of the following.
+            1) "On", or "on" indicate that the buzzer should turn on
+            2) Anything else turns the buzzer off
+        duty defaults to 100 and represents the duty cycle of the pwm wave
+            controlling the buzzer. The function restricts the values of duty
+            to be between 0 and 100 percent
+            '''
     if Input == "On" or Input == "on":
-        BuzzerChannel.pulse_width_percent(100)
+        if duty > 100:
+            duty = 100
+        if duty < 0:
+            duty = 0
+        BuzzerChannel.pulse_width_percent(duty)
     else:
         BuzzerChannel.pulse_width_percent(0)
 
