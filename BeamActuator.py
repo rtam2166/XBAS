@@ -5,7 +5,7 @@ Created on Mon May 29 17:10:41 2017
 @author: drago
 """
 
-def Move(Board1,Destination, probe = False):
+def Move(Destination, probe = False):
     '''Function which utalizes code from the l6470nucleo.py file to drive the
     stepper motors.
     
@@ -100,7 +100,7 @@ def Move(Board1,Destination, probe = False):
         print("    Probe part of BeamActuator.Move() function not called")
         return("Done")
         
-def Home(Board1):
+def Home():
     '''Home the Beam Actuator.
     Function input:
         Board1 is the l6470nucleo.Dual6470 class object that the beam actuator
@@ -163,7 +163,7 @@ def Home(Board1):
             utime.sleep_ms(1000)
             start = utime.ticks_ms()
 
-def Status(Board1):
+def Status():
     '''Print information about the board's status for the Beam actuator
     to the repl
     Function Inputs:
@@ -173,5 +173,5 @@ def Status(Board1):
         None'''
     Board1.GetStatus(1,verbose = 1)
 
-from setup import ErrBeamAct
+from setup import ErrBeamAct, Board1
 import utime
