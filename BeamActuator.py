@@ -164,7 +164,8 @@ def Home(Board1):
             start = utime.ticks_ms()
 
 def Status(Board1):
-    '''Get information about the board's status for the Beam actuator
+    '''Print information about the board's status for the Beam actuator
+    to the repl
     Function Inputs:
         Board1 is the l6470.Dual6470 class object which correlates with
             the beam actuator
