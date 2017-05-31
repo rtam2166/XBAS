@@ -101,10 +101,18 @@ def Move(Board1,Destination, probe = False):
         return("Done")
         
 def Home(Board1):
+    '''Home the Beam Actuator.
+    Function input:
+        Board1 is the l6470nucleo.Dual6470 class object that the beam actuator
+        is a member of.
+    Function output:
+        outputs and "Error Occured" if there is an error.
+        '''
+        
     # Home Gantry Code. +/- 400 is the max speed of the gantry
     print("        Beam Actuator GoUntil switch command")
     Board1.GetStatus(1,verbose = 0)
-    Board1.GoUntil(1,-600)
+    Board1.GoUntil(1,-400)
     utime.sleep_ms(250)
     # Check home status in while loop
     while True:
@@ -156,6 +164,7 @@ def Home(Board1):
             start = utime.ticks_ms()
 
 def Status(Board1):
+    '''get information about the board's status for the Beam actuator'''
     Board1.GetStatus(1,verbose = 1)
 
 from setup import ErrBeamAct

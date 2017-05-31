@@ -115,7 +115,14 @@ def Move(Board1,Destination, probe = False):
         return("Done")
         
 def Home(Board1):
-    global ErrGantry
+    '''Home the Beam Actuator.
+    Function input:
+        Board1 is the l6470nucleo.Dual6470 class object that the beam actuator
+        is a member of.
+    Function output:
+        outputs and "Error Occured" if there is an error.
+        '''
+        
     # Home Gantry Code. +/- 400 is the max speed of the gantry
     print("        Gantry GoUntil switch command")
     Board1.GoUntil(2,-500)
@@ -158,6 +165,4 @@ def Home(Board1):
 def Status(Board1):
     Board1.GetStatus(2,verbose = 1)
     
-import task_share
-import utime
 from setup import ErrGantry , ErrCalibration, ErrLeveling, ErrAssembly
