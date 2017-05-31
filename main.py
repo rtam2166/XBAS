@@ -7,6 +7,7 @@
 
 # importing modules for buffers and functions
 print('Program initilizing')
+import utime
 import Gantry
 import Probe
 import BeamActuator
@@ -26,241 +27,34 @@ from setup import ErrInit,\
                     ErrFileCheck,\
                     ErrSong,\
                     XBeam,\
-                    zero_flags
-                    
-def paramatarize():
-    
-    # Set the registers which need to be modified for the motor to go
-    # This value affects how hard the motor is being pushed
-    K_VAL = 80
-    Board1._set_par_1b ('KVAL_HOLD', K_VAL)
-    Board1._set_par_1b ('KVAL_RUN', K_VAL)
-    Board1._set_par_1b ('KVAL_ACC', K_VAL)
-    Board1._set_par_1b ('KVAL_DEC', K_VAL)
-    # Speed at which we transition from slow to fast V_B compensation
-    INT_SPEED = 1032 #3141
-    Board1._set_par_2b ('INT_SPEED', INT_SPEED)
-    # Acceleration and deceleration back EMF compensation slopes
-    ST_SLP = 25
-    Board1._set_par_1b ('ST_SLP', ST_SLP)
-    Board1._set_par_1b ('FN_SLP_ACC', ST_SLP)
-    Board1._set_par_1b ('FN_SLP_DEC', ST_SLP)
-    # Set the maximum speed at which motor will run
-    MAX_SPEED = 30
-    Board1._set_par_2b ('MAX_SPEED', MAX_SPEED)
-    # Set the maximum acceleration and deceleration of motor
-    ACCEL = 5
-    DECEL = 20
-    Board1._set_par_2b ('ACC', ACCEL)
-    Board1._set_par_2b ('DEC', DECEL)
-    
-    # Set the number of Microsteps to use
-    SYNC_EN = 0x00
-    SYNC_SEL = 0x10
-    STEP_SEL = 8
-    Board1._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
-            
-    # Set the Stall Threshold
-    STALL_TH = 127
-    Board1._setStallThreshold(STALL_TH)
-    
-         # Set the registers which need to be modified for the motor to go
-            # This value affects how hard the motor is being pushed
-    K_VAL = 80
-    Board2._set_par_1b ('KVAL_HOLD', K_VAL)
-    Board2._set_par_1b ('KVAL_RUN', K_VAL)
-    Board2._set_par_1b ('KVAL_ACC', K_VAL)
-    Board2._set_par_1b ('KVAL_DEC', K_VAL)
-    # Speed at which we transition from slow to fast V_B compensation
-    INT_SPEED = 1032 #3141
-    Board2._set_par_2b ('INT_SPEED', INT_SPEED)
-    # Acceleration and deceleration back EMF compensation slopes
-    ST_SLP = 25
-    Board2._set_par_1b ('ST_SLP', ST_SLP)
-    Board2._set_par_1b ('FN_SLP_ACC', ST_SLP)
-    Board2._set_par_1b ('FN_SLP_DEC', ST_SLP)
-    # Set the maximum speed at which motor will run
-    MAX_SPEED = 20
-    Board2._set_par_2b ('MAX_SPEED', MAX_SPEED)
-    # Set the maximum acceleration and deceleration of motor
-    ACCEL = 5
-    DECEL = 12
-    Board2._set_par_2b ('ACC', ACCEL)
-    Board2._set_par_2b ('DEC', DECEL)
-    
-    # Set the number of Microsteps to use
-    SYNC_EN = 0x00
-    SYNC_SEL = 0x10
-    STEP_SEL = 8
-    Board2._set_MicroSteps (SYNC_EN, SYNC_SEL, STEP_SEL)
-            
-            # Set the Stall Threshold
-    STALL_TH = 127
-    Board2._setStallThreshold(STALL_TH)
+                    zero_flags,\
+                    FileCheck,\
+                    DCMotor,\
+                    Solenoid,\
+                    Mode,\
+                    RedLED,\
+                    GreenLED,\
+                    YellowLED,\
+                    Buzzer,\
+                    Go,\
+                    Board1,\
+                    Board2
 
-
-def Mode():
-    '''Function which is used to read and return the selection of the three
-    position switch.
-    @input  Inputs are the read values of pin ThreeSwitch()
-    @return Returns either a 1, 2, or 3 corresponding with the selection of the
-    three position switch which are differentiated by different resistor values
-    hardcoded below.'''
-    
-    # Get the reading from the three position switch analog pin
-    value = ThreeSwitch()
-    
-    # Pins by Voltage in voltage
-    V3 = 4030
-    V2 = 1950
-    V1 = 1300
-    tolerance = 200
-#    print("First Position value in ticks: "+str(V1))
-#    print("Second Position value in ticks: "+str(V2))
-#    print("Third Position value in ticks: "+str(V3))
-#    print("Tolerance of "+str(tolerance))
-#    print("Three Pos Switch read value in ticks: "+str(value))
-    
-    # Check if the first position has been selected
-    if (value <= (V1 + tolerance)) and (value >= (V1 - tolerance)):
-#        print("Selected Mode 1")
-        return(1)
-           
-    # Check if the second position has been selected
-    elif (value <= (V2 + tolerance)) and (value >= (V2 - tolerance)):
-#        print("Selected Mode 2")
-        return(2)
-           
-    # Check if the third position has been selected
-    elif value <= V3 + tolerance and value >= V3 - tolerance:
-#        print("Selected Mode 3")
-        return(3)
-           
-    else:
-#        print("No Mode Selected")
-        return(0)
-    
-def FileCheck():
-    '''Function checks for files in the same directory and writes to the error
-    report, listing the files from FileList that are missing. After that, if
-    the Switch has been set to 1 (meaning an file was missing), it sets the
-    ErrFileCheck to 1 and runs the ErrorHandler() function. This function
-    also completely takes care of its own error report.
-    Takes no paramaters.
-    @return Function returns a string if an error occured, an integer if not.
-    '''
-    print("Checking Files")
-    Switch = 0      # Indicates if an error has occured. Used so that the error
-                    #   message indicating that the error occured during the
-                    #   initilization phase is written only once at the
-                    #   beginning of the report.
-    import os       # Import os for the listdir() function
-    
-    # List of strings of file names to check for in the system directory
-    FileList = ["main.py",
-                "boot.py",
-                "l6470nucleo.py",
-                "encoder.py",
-                "task_share.py",
-                "BeamActuator.py",
-                "Gantry.py",
-                "Probe.py",
-                "Import.py",
-                "setup.py"]
-                
-    # Retrieve the system directory information as a list of strings
-    files = os.listdir()
-#    print("files present")
-#    print(files)
-#    print("")
-    # Open the Error Report text file in preparation of writing errors to
-    f = open("Error Report.txt",'w')
-    for file in FileList:
-        print("    file being checked: "+str(file))
-        if file not in files:
-            # If the file being checked is not on the pyboard
-            if Switch == 0:
-                f.write('There was an error during the system initilization'+\
-                        '\r\r\n')
-                Switch = 1
-            f.write("The file "+file+" is missing\r\r\n")
-            print("        The file "+file+" is missing")
-            
-            # If special action is required for a file, add an if statement
-            #   here which checks for said file to write that specific
-            #   recommended action here.
-            
-            f.write("    Recommended action: Copy "+file+" from a backup onto"+
-                    " the pyboard\r\r\n")
-            
-            # Written Error report should look like...
-            #   There was an error during the initilization phase
-            #   The file main.py is missing
-            #   Recommened action: Copy main.py from a backup onto the pyboard
-    
-    # Finished writing to Error Report, close the text file
-    f.close()
-    
-    if Switch != 0:
-        # If there was an error, set flag
-        print("File Check Done, error occured, please press (deliberatly) "+\
-              "the go once to turn the noise off")
-        # Perfrom special error handling unique to this function which must be
-        #   done here for the system to work
-        import utime
-        RedLED.high()
-        YellowLED.high()
-        GreenLED.high()
-        switch = 0
-        go = 0
-        Time = 0
-        while True:
-            start = utime.ticks_ms()
-            if switch == 0 and go == 0:
-                BuzzerChannel.pulse_width_percent(100)
-            elif switch == 1 and go == 0:
-                BuzzerChannel.pulse_width_percent(0)
-            else:
-                BuzzerChannel.pulse_width_percent(0)
-            if Go() == 1 and go == 0:
-                go = 1
-                BuzzerChannel.pulse_width_percent(0)
-                print("Go hit first time, sleep for 0.25 seconds.")
-                utime.sleep_ms(250)
-                print("Buzzer Off, please press the go button once more"+\
-                      " to resume")
-            elif Go() == 1 and go == 1:
-                break
-            if go == 0:
-                current = utime.ticks_ms()
-                Time = Time + (current-start)
-                start = current
-            if Time >= 1000 and go == 0:
-                if switch == 0:
-                    switch = 1
-                else:
-                    switch = 0
-                Time = 0
-        return("Error Occured")
-    else:
-        print("File Check Done, no errors")
-        return([files,FileList])
-    
 def Lights_Sound_Off():
     '''Turns all LEDs and the buzzer off
     Function has no input paramaters or returned values'''
     RedLED.low()
     YellowLED.low()
     GreenLED.low()
-    BuzzerChannel.pulse_width_percent(0)
-#    print("All Lights and Sound have been turned off")
+    Buzzer('off')
+    print("All Lights and Sound have been turned off")
     
 def Lights_Sound_Action():
     '''This function turns on various LEDs and controls the buzzer depending on
     the error flags which have been raised. Function has no input paramaters or
     returned values'''
     Lights_Sound_Off()      # Turn lights off
-#    print("Lights_Sound_Action() has been called. Let the show begin.")
+    print("Lights_Sound_Action() has been called. Let the show begin.")
     import utime
     switch = 0              # Switch is bolean variable that switches each run
                             #   of the LEDs and buzzer so the system knows to
@@ -277,38 +71,38 @@ def Lights_Sound_Action():
         #   yellow LEDs, no blinking
         Green = 1
         Yellow = 1
-#        print("Gantry Error detected")
+        print("    Gantry Error detected")
     elif ErrProbe.get() == 1:
         # If Probe flag raised, yellow and red LED, no blinking
         Yellow = 1
         Red = 1
-#        print("Probe Error detected")
+        print("    Probe Error detected")
     elif ErrBeamAct.get() == 1:
         # If beam actuator flag raised, green and red LED, no blinking
         Green = 1
         Red = 1
-#        print("Beam Actuator Error detected")
+        print("    Beam Actuator Error detected")
     elif ErrSong.get() == 1:
         # If Song error flag raised, all LEDs on, blinking
         Green = 1
         Yellow = 1
         Red = 1
         Blink = 1
-#        print("Piano Switch Board Combination Error detected")
+        print("    Piano Switch Board Combination Error detected")
     elif ErrRailActR.get()==1 or ErrRailActL.get() == 1:
         # If Either rail actuator flags are raised
         Green = 1
         Yellow = 1
         Red = 0
         Blink = 1
-#        print("One or Both of the Rail Actuators Error detected")
+        print("    One or Both of the Rail Actuators Error detected")
     else:
         # No error, Set Green LED, turn noise on 1 sec
-#        print("No Error detected, doing the green light and 1 second beep")
+        print("    No Error detected, doing the green light and 1 second beep")
         GreenLED.high()
-        BuzzerChannel.pulse_width_percent(100)
+        Buzzer('on')
         utime.sleep(1)
-        BuzzerChannel.pulse_width_percent(0)
+        Buzzer('off')
         return
         
     while True:
@@ -319,11 +113,11 @@ def Lights_Sound_Action():
             # Check Buzzer for if it should run or not. Should not run if Stop
             #   is not 0 meaning user hit go at some point.
             if Stop == 0:
-                BuzzerChannel.pulse_width_percent(100)
+                Buzzer('On')
 #                print("Sound On")
             else:
 #                print("Sound Off")
-                BuzzerChannel.pulse_width_percent(0)
+                Buzzer('Off')
             # Check what LEDs should be on
             if Green == 1:
                 GreenLED.high()
@@ -334,7 +128,7 @@ def Lights_Sound_Action():
         else:
             # Buzzer should be off
 #            print("Sound Off")
-            BuzzerChannel.pulse_width_percent(0)
+            Buzzer('Off')
                 
             # Check what LEDs should be blinking. If so, then the LEDs now
             #   need to be off.
@@ -435,19 +229,19 @@ def ErrorHandler():
     
 #    print("Exiting Error Handler")
     # Now Home the system
-#    Home("All")
+    Home("All")
         
-def callback(line):
-    '''This is a function which runs during interrupts. This should occur when
-    the emergecny stop button is pressed down. It waits until the emergency
-    stop has been disengaged and initiates a soft restart'''
-    print("Emergency Stop pressed...")
-    while True:
-        if Stop_Pin.value() == 0:
-            print("... and released")
-            break
-    import pyb
-    pyb.hard_reset()
+#def callback(line):
+#    '''This is a function which runs during interrupts. This should occur when
+#    the emergecny stop button is pressed down. It waits until the emergency
+#    stop has been disengaged and initiates a soft restart'''
+#    print("Emergency Stop pressed...")
+#    while True:
+#        if Stop_Pin.value() == 0:
+#            print("... and released")
+#            break
+#    import pyb
+#    pyb.hard_reset()
 
 def Home(*arg):
     '''Function Homes parts as indicated by the *arg which is a tuble of
@@ -526,10 +320,8 @@ def Home(*arg):
     if ('Screwdrivers' in arg) or ('All' in arg):
         # Turn of both DC motors and solenoids
 #        print("    Turning off all DC motors and Solenoids for srewdrivers")
-        DCMotorRightPin.high()
-        DCMotorLeftPin.high()
-        SolenoidRightPin.high()
-        SolenoidLeftPin.high()
+        DCMotor(1,1)
+        Solenoid(1,1)
         
     # Home Gantry
     if ('Gantry' in arg) or ('All' in arg):
@@ -1077,11 +869,11 @@ def TorqueDown(Input):
                 if Input == "L":
                     # Left Side
 #                    print("Left Solenoid On")
-                    SolenoidLeftPin.low()
+                    Solenoid('l','on')
                 if Input == "R":
                     # Right Side
 #                    print("Right Solenoid On")
-                    SolenoidRightPin.low()
+                    Solenoid('r','off')
         
                 # Import Time so system can wait for stuff to finish
 
@@ -1092,11 +884,11 @@ def TorqueDown(Input):
                 if Input == "L":
                     # Left Side
 #                    print("Left DC motor On")
-                    DCMotorLeftPin.low()
+                    DCMotor("l","On")
                 if Input == "R":
                     # Right Side
 #                    print("Right DC motor On")
-                    DCMotorRightPin.low()
+                    DCMotor("R","On")
 
                 # Sleep for X amount of time so the DC motor torques
                 #   down the bolt.
@@ -1104,11 +896,9 @@ def TorqueDown(Input):
                 
                 # Turn screwdriver motors and solenoids off
 #                print("all motors and solenoids off")
-                DCMotorLeftPin.high()
-                DCMotorRightPin.high()
-                SolenoidLeftPin.high()
-                SolenoidRightPin.high()
-    
+                DCMotor(1,1)
+                Solenoid(1,1)
+                
                 # Sleep till solenoids retract
                 utime.sleep(100)
     
@@ -1309,116 +1099,6 @@ def Sleep_Mode(Input):
 #//////////////////////////////////////////////////////////////////////////////
 '''                              Main Program                               '''
 #//////////////////////////////////////////////////////////////////////////////
-#print("Hello World")
-import pyb
-import utime
-
-# Pin Definition
-print("Creating pins")
-
-# Notable stepper driver pins
-
-# LED Pin Definition
-print("    creating LED pins")
-RedLED = pyb.Pin (pyb.Pin.cpu.C4, mode = pyb.Pin.OUT_PP, 
-                      pull = pyb.Pin.PULL_DOWN)
-
-YellowLED = pyb.Pin (pyb.Pin.cpu.C2, mode = pyb.Pin.OUT_PP, 
-                         pull = pyb.Pin.PULL_DOWN)
-
-GreenLED = pyb.Pin (pyb.Pin.cpu.B0, mode = pyb.Pin.OUT_PP, 
-                        pull = pyb.Pin.PULL_DOWN)
-
-# Piezzo Buzzer
-BuzzerPin = pyb.Pin(pyb.Pin.cpu.A3, mode = pyb.Pin.OUT_PP, 
-                        pull = pyb.Pin.PULL_DOWN)
-timBuzzer = pyb.Timer(2,freq = 1500)
-BuzzerChannel = timBuzzer.channel(4, pyb.Timer.PWM, pin = BuzzerPin)
-BuzzerChannel.pulse_width_percent(0)
-
-# Solenoid and DC Motor Pin call outs and functions for controlling
-#   said pins.
-print("    Creating solenoid pins")
-SolenoidLeftPin = pyb.Pin (pyb.Pin.cpu.D2, mode = pyb.Pin.OUT_PP,
-                           pull = pyb.Pin.PULL_DOWN)
-SolenoidLeftPin.high()
-        
-SolenoidRightPin = pyb.Pin (pyb.Pin.cpu.B6, mode = pyb.Pin.OUT_PP,
-                            pull = pyb.Pin.PULL_DOWN)
-SolenoidRightPin.high()
-
-print("    Creating DC motor pins")
-DCMotorLeftPin = pyb.Pin (pyb.Pin.cpu.C11, mode = pyb.Pin.OUT_PP,
-                          pull = pyb.Pin.PULL_DOWN)
-DCMotorLeftPin.high()
-        
-DCMotorRightPin = pyb.Pin (pyb.Pin.cpu.B7, mode = pyb.Pin.OUT_PP,
-                           pull = pyb.Pin.PULL_DOWN)
-DCMotorRightPin.high()
-
-# Creating the Go button function call. Go() should give 0 or 1 depending on 
-#   the pin input. Basically, equating Go_Pin.value() to Go() so I do less
-#   typing.
-print("    Creating go pin")
-Go_Pin = pyb.Pin(pyb.Pin.cpu.C4, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_UP)
-Go = Go_Pin.value
-
-'''Three Position Swtich Pin'''
-print("    Creating 3 pos switch pin")
-ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
-adc = pyb.ADC(ThreeSwitch_Pin)
-ThreeSwitch = adc.read
-
-# Check Files
-Output = FileCheck()
-
-# Check Output of function FileCheck() for an error in the shape of a string
-if type(Output)==str:
-    # If there was an error, handle it
-#    print("error with files, error handled by special exception error error"+
-#          " handling section of FileCheck()")
-    
-    # If there was an error and the user hit the go twice, do a soft reset,
-    #   restarting the program from the beginning.
-#    print("SOFT RESET!!!!")
-    import sys
-    sys.exit()
-    
-# If there was no error, create all items
-print("    creating class objects")
-
-
-'''Stepper Driver pin and  object creations'''
-import l6470nucleo                  # Import file
-SCK= pyb.Pin(pyb.Pin.cpu.B5)        # stby_rst_pin 
-ncs1= pyb.Pin(pyb.Pin.cpu.A10)      # cs_pin for board 1
-ncs2= pyb.Pin(pyb.Pin.cpu.A4)       # cs_pin for board 2
-Board1 = l6470nucleo.Dual6470(1,ncs1,SCK) # Controls the Gantry (2) and
-                                          # Beam Actuator (1)
-Board2 = l6470nucleo.Dual6470(1,ncs2,SCK) # Controls Left (1) and Right
-                                          # (2) rail actuators
-                                          # Beam Actuator (1)
-paramatarize()
-Board1.HardHiZ(1)
-Board1.GetStatus(1)
-Board1.HardHiZ(2)
-Board1.GetStatus(2)
-Board2.HardHiZ(1)
-Board2.GetStatus(1)
-Board2.HardHiZ(2)
-Board2.GetStatus(2)
-
-print("    creating interrupt for emergency stop")
-# The same as the Go pin, but greating a short function call for the emergency
-#   stop button. This pin is defined last as to prevent memory issues found
-#   importing task_share.
-Stop_Pin = pyb.Pin(pyb.Pin.cpu.C5, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_UP)
-
-'''External Interrupt Pin'''
-import micropython
-micropython.alloc_emergency_exception_buf(100)
-extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_UP,
-                    callback)
 
 print("    importing misc files")
 import Import
