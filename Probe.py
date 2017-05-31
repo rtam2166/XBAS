@@ -6,10 +6,18 @@ Created on Mon May 29 17:03:56 2017
 """
 
 def Move(Input):
-    if Input == "up":
+    '''Moves the probe up, down, or not at all
+    Function Inputs:
+        Input can be 1 of 3 things
+            1)"up" or "Up" moves the probe up
+            2)"down" or "Down" moves the probe down
+            3) anything else stops the probe.
+    Function Outputs:
+        None'''
+    if Input == "up" or Input == "Up":
         RaisePin.high()
         LowerPin.low()
-    elif Input == "down":
+    elif Input == "down" or Input == "Down":
         RaisePin.low()
         LowerPin.high()
     else:
@@ -87,6 +95,13 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
         return("Error Occured")
 
 def Home():
+    '''Function homes the probe by checking the reference tick for the
+    probe. The function also has a timer if the reference tick doesn't
+    work
+    Function Inputs:
+        None
+    Function Outputs:
+        None'''
     if ProbeReference.value() != 1:
         # False, Retract Probe until it is at the reference tick
         print("        Probe is not at reference tick, raise probe")
@@ -109,6 +124,11 @@ def Home():
                 break
 
 def read():
+    '''Function returns the read value from the Probe's Encoder
+    Function Inputs:
+        None
+    Function Outputs:
+        None'''
     return(ProbeEncoder.read())
     
 # Encoder Pins and Object for the Probe
@@ -139,4 +159,5 @@ LowerPin = pyb.Pin(pyb.Pin.cpu.B8, mode = pyb.Pin.OUT_PP,
                    pull = pyb.Pin.PULL_DOWN)
 LowerPin.high()
 
+# Grab the ErrProbe error flag from setup
 from setup import ErrProbe
