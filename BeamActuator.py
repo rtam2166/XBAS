@@ -164,7 +164,12 @@ def Home(Board1):
             start = utime.ticks_ms()
 
 def Status(Board1):
-    '''get information about the board's status for the Beam actuator'''
+    '''Get information about the board's status for the Beam actuator
+    Function Inputs:
+        Board1 is the l6470.Dual6470 class object which correlates with
+            the beam actuator
+    Function Outputs:
+        None'''
     Board1.GetStatus(1,verbose = 1)
 
 from setup import ErrBeamAct
