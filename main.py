@@ -6,6 +6,7 @@
 # -*- coding: utf-8 -*-
 
 # importing modules for buffers and functions
+print('Program initilizing')
 import Gantry
 import Probe
 import BeamActuator
@@ -27,118 +28,6 @@ from setup import ErrInit,\
                     XBeam,\
                     zero_flags
                     
-def ImportSong():
-    '''This function checks the piano board's last four switches (the pins
-    called Note1 to Note4) and converts those four binary inputs into an
-    integer. With four switches available, the range of corresponding integer
-    inputs should be 0 to 15 (1-16 if you add 1 to the final number)
-    
-    Ammendment: due to issues, this function has been basically deleted pending
-    future projects which fix the piano switchboard
-    '''
-    XBeam.put(500)
-    
-#    
-#    # Get Values from the switches and store into variables a, b, c, and d
-#    # NOTE: as with Note0, reading 0 means true on the switch
-#    if Note0.value() == 0:
-#        a = 1
-#    else:
-#        a = 0
-#    if Note1.value() == 0:
-#        b = 1
-#    else:
-#        b = 0
-#    if Note2.value() == 0:
-#        c = 1
-#    else:
-#        c = 0
-#    if Note3.value() == 0:
-#        d = 1
-#    else:
-#        d = 0
-#    if Note4.value() == 0:
-#        e = 1
-#    else:
-#        e = 0
-#        
-#    # Calculating a binary number from four binary input
-#    Number = (a*2**4 + b*2**3 + c*2**2 + d*2**1 + e*2**0) + 1
-#        
-#    # If the user has selected the combination of switches which correspond
-#    #   to 1-16, than input the X-Beam length into the buffer XBeam that 
-#    #   corresponds to that input. Additionally, if there is no input, than the
-#    #   system will return an error.
-#    if Number == 1:
-#        Length = 500
-#        
-#    elif Number == 2:
-#        ErrSong.put(1)
-#        
-#    elif Number == 3:
-#        ErrSong.put(1)
-#        
-#    elif Number == 4:
-#        ErrSong.put(1)
-#        
-#    elif Number == 5:
-#        ErrSong.put(1)
-#        
-#    elif Number == 6:
-#        ErrSong.put(1)
-#        
-#    elif Number == 7:
-#        ErrSong.put(1)
-#        
-#    elif Number == 8:
-#        ErrSong.put(1)
-#        
-#    elif Number == 9:
-#        ErrSong.put(1)
-#        
-#    elif Number == 10:
-#        ErrSong.put(1)
-#        
-#    elif Number == 11:
-#        ErrSong.put(1)
-#        
-#    elif Number == 12:
-#        ErrSong.put(1)
-#        
-#    elif Number == 13:
-#        ErrSong.put(1)
-#        
-#    elif Number == 14:
-#        ErrSong.put(1)
-#        
-#    elif Number == 15:
-#        ErrSong.put(1)
-#        
-#    elif Number == 16:
-#        ErrSong.put(1)
-#        
-#    # Note that with 5 switches, you can have up to 32 options. Add more elif
-#    #   statements.
-#        
-#    if ErrSong.get() == 0:
-#        XBeam.put(Length)
-#        return("No Error")
-#        
-#    elif ErrSong.get() == 1:
-#        f = open("Error Report.txt","w")
-#        f.write('''An error occured during the initilization phase\n\r
-#                The switch combination of the piano switch board does not correspond to any of\n\r
-#                registered X-Beam lengths.\n\r
-#                Recomendations:\n\r
-#                    1) Check your switch combination\n\r
-#                    2) Open ImportSong.py and check that the switch combination you've selected\n\r
-#                        has a corresponding X-Beam length.\n\r
-#                Note: Please remember to check that if you add an X-Beam Length to\n\r
-#                      ImportSong.py, check that the corresponding Calibration and BoltPattern\n\r
-#                      csv files are included''')
-#        f.close()
-#        return("Error Occured")
-
 def paramatarize():
     
     # Set the registers which need to be modified for the motor to go
@@ -260,7 +149,7 @@ def FileCheck():
     Takes no paramaters.
     @return Function returns a string if an error occured, an integer if not.
     '''
-#    print("Checking Files")
+    print("Checking Files")
     Switch = 0      # Indicates if an error has occured. Used so that the error
                     #   message indicating that the error occured during the
                     #   initilization phase is written only once at the
@@ -272,9 +161,12 @@ def FileCheck():
                 "boot.py",
                 "l6470nucleo.py",
                 "encoder.py",
-                "BoltPattern500.csv",
-                "Calibration500.csv",
-                "task_share.py"]
+                "task_share.py",
+                "BeamActuator.py",
+                "Gantry.py",
+                "Probe.py",
+                "Import.py",
+                "setup.py"]
                 
     # Retrieve the system directory information as a list of strings
     files = os.listdir()
@@ -284,7 +176,7 @@ def FileCheck():
     # Open the Error Report text file in preparation of writing errors to
     f = open("Error Report.txt",'w')
     for file in FileList:
-#        print("file being checked: "+str(file))
+        print("    file being checked: "+str(file))
         if file not in files:
             # If the file being checked is not on the pyboard
             if Switch == 0:
@@ -292,7 +184,7 @@ def FileCheck():
                         '\r\r\n')
                 Switch = 1
             f.write("The file "+file+" is missing\r\r\n")
-#            print("    The file "+file+" is missing")
+            print("        The file "+file+" is missing")
             
             # If special action is required for a file, add an if statement
             #   here which checks for said file to write that specific
@@ -311,8 +203,8 @@ def FileCheck():
     
     if Switch != 0:
         # If there was an error, set flag
-#        print("File Check Done, error occured, please hit go once to turn "+\
-#              "turn the noise off")
+        print("File Check Done, error occured, please press (deliberatly) "+\
+              "the go once to turn the noise off")
         # Perfrom special error handling unique to this function which must be
         #   done here for the system to work
         import utime
@@ -333,9 +225,10 @@ def FileCheck():
             if Go() == 1 and go == 0:
                 go = 1
                 BuzzerChannel.pulse_width_percent(0)
-#                print("Go hit first time, sleep for 0.25 seconds.")
+                print("Go hit first time, sleep for 0.25 seconds.")
                 utime.sleep_ms(250)
-#                print("Buzzer Off, please hit Go once more to resume")
+                print("Buzzer Off, please press the go button once more"+\
+                      " to resume")
             elif Go() == 1 and go == 1:
                 break
             if go == 0:
@@ -350,191 +243,8 @@ def FileCheck():
                 Time = 0
         return("Error Occured")
     else:
-#        print("File Check Done, no errors")
+        print("File Check Done, no errors")
         return([files,FileList])
-
-def ImportBoltPattern():
-    '''This function imports a bolt pattern file based on the value of buffer
-    X-Beam. This is done by using the Python try function to attempt to import
-    the bolt pattern file assotiated with the input given which should be the
-    length of the X-Beam being worked upon. The input is from the
-    ImportSwitchBoard() function. Example of how this would work is shown
-    below.
-    
-    # Value in XBeam buffer is 500
-    Input = XBeam
-    String = "BoltPattern"+str(Input)+".csv"
-        i.e. BoltPattern500.csv
-        
-    After figureing out the file name, it tries to import the file. If the file
-    exists, the function returns a list of integers. If the file does not 
-    exist, then the program returns an error message
-    
-    @input  Function reads buffer X-Beam for the necessary input which should
-            be the length of the X-Beam
-    @return Function returns a string if there was an error and writes a
-            message to the Error Report text file. If there was no error, the 
-            function returns a list with two sub-lists, one containing strings
-            of which side is to be bolted and the other containing positions
-            relative to the gantry's zero position of where to move to.
-    '''
-#    print("Beginning to import BoltPatternXXX.csv")
-    # Getting length value of the X-Beam from the buffer XBeam
-    Input = XBeam
-#    print("    Working X-Beam "+str(Input))
-    
-    # Creating the name of the file to be imported
-    FileName = "BoltPattern"+str(Input)+".csv"
-#    print("    File name assotiated with X-Beam: "+FileName)
-    
-    # a function unique binary error flag indicating which error has occured.
-    error = 0
-    
-    '''Open Error Report for editing'''
-    f = open("Error Report.txt","w")
-#    print("    Error Report File Opened, checking values")
-    
-    '''Attempt to import the BoltPattern file indicated by the input.'''
-    with open(FileName,'r') as file:
-        '''File does exist, process the data as indicated'''
-        i = 1
-#            print("    File Opened, splitting values into two seperate lists")
-        for line in file:
-            line = line.split(',')
-            line[-1] = (line[-1].replace("\n",''))
-            line[-1] = (line[-1].replace("\r",''))
-            if i == 1:
-#                    print("    line 1: "+str(line))
-                BoltSide = line
-            elif i == 2:
-#                    print("    line 2: "+str(line))
-                BoltData = line
-#                print("    Line "+str(i)+" split and processed")
-            i = i+1
-    
-    '''Check the values in the BoltSide list. If there is an error, write
-    to the Error Report text file.'''
-#    print("Checking items indicating sides in the BoltSide list")
-    i = 1
-    for item in BoltSide:
-        if item != "R" and item != "L":
-            string = "Error in "+FileName+", row 1 item "+str(i)+": '"+\
-                        str(item)+"' is not a valid input"
-            f.write(string)
-            f.write('\r\r\n')
-            error = 1
-#            print("    Item "+str(i)+" checked, "+string)
-        i = i+1
-        
-    '''Check the values in the BoltData list. If there is an error, write
-    to the Error Report text file.'''
-#    print("Checking items indicating positions in the BoltData list")
-    i = 1
-    for item in BoltData:
-        try:
-            float(item)
-        except ValueError:
-            string = "Error in "+FileName+", row 2 item "+str(i)+": '"+\
-                        str(item)+"' is not a valid input"
-            f.write(string)
-            f.write('\r\r\n')
-            error = 1
-#            print("    Item "+str(i)+" checked, "+string)
-        i = i+1
-    
-    '''If there were no issues in the lists, return the two lists'''
-    if error == 0:
-#        print("   No Errors importing "+FileName)
-        return([BoltSide,BoltData])
-    elif error != 0:
-#        print("    An error has occured, please refer to the "+\
-#        "'Error Report.txt' file")
-        f.close()
-        ErrBoltCsv.put(1)
-        return("Error Occured")
-
-def ImportCalibration():
-    '''This function imports a calibration file based on the value stored in
-    the XBeam buffer. This is done by using the Python try function to attempt
-    to import the calibration file assotiated with the input given which should
-    be the length of the X-Beam being worked upon. The input is from the 
-    ImportSwitchBoard() function. Example of how this would work is shown 
-    below.
-    
-    # Value in XBeam buffer is 500
-    Input = XBeam
-    String = "Calibration"+str(Input)+".csv"
-        i.e. Calibration500.csv
-        
-    After figureing out the file name, it tries to import the file. If the file
-    exists, the function returns a list of integers. If the file does not 
-    exist, then the program returns an error message
-    
-    @input  This function takes inputs in by reading the buffer XBeam for the
-            necessary information which is an integer indicating XBeam length
-    @return This function returns a string if there was an error. If not, the
-            function returns a list of values'''            
-                  
-#    print("Beginning to import CalibrationXXX.csv")
-    
-
-    # Getting length value of the X-Beam from the buffer XBeam
-    Input = XBeam
-#    print("    Working X-Beam "+str(Input))
-
-    # Creating the name of the file to be imported
-    FileName = "Calibration"+str(Input)+".csv"
-#    print("    File name assotiated with X-Beam: "+FileName)
-
-    # a function unique binary error flag indicating which error has occured.
-    error = 0
-    
-    '''Attempt to import the Calibration file indicated by the input.'''
-    with open(FileName,'r') as file:
-        '''File does exist, process the data as indicated'''
-#            print("    File Opened, processing data and checking items")
-        for line in file:
-            String = str(line)              # Bring in line of info from
-                                            #    csv file
-            List = String.split(',')      # Split line of info at the comma
-            String = []
-            i = 0
-            for item in List:
-                '''Go through each item in List of info and try to make
-                each item a float. If not, return an error message 
-                indicating which item was invalid.'''
-                try:
-                    '''Try to turn the item into a float'''
-                    List[i] = float(item)
-#                        print("    Item "+str(i)+" checked and is valid")
-                  
-                except ValueError or TypeError:
-                    '''Error indicating invalid input'''
-                    String.append("Error in "+FileName+" Line "+str(i+1)+
-                                  ": '"+item+"' is not a valid input")
-                    ErrCalCsv = 1
-#                        print("    Error in "+FileName+" Line "+str(i+1)+
-#                                      ": '"+item+"' is not a valid input")
-                    error = 1
-              
-                i = i+1
-    
-    if error == 0:
-#        print("    No error importing "+FileName)
-        return(List) # return the final list of values
-                  
-    elif error != 0:
-        f = open("Error Report.txt","w")
-        for item in String:
-            f.write(item)
-            f.write('\r\r\n')
-        f.close()
-#        print("    Error Occured importing "+FileName)
-        ErrCalCsv.put(1)
-        return("Error Occured")
-    else:
-        return('''Error Occured, error flag in ImportCalibration was not 0 or 1
-               at the end of the function''')
     
 def Lights_Sound_Off():
     '''Turns all LEDs and the buzzer off
@@ -731,10 +441,10 @@ def callback(line):
     '''This is a function which runs during interrupts. This should occur when
     the emergecny stop button is pressed down. It waits until the emergency
     stop has been disengaged and initiates a soft restart'''
-#    print("Emergency Stop pressed...")
+    print("Emergency Stop pressed...")
     while True:
         if Stop_Pin.value() == 0:
-#            print("... and released")
+            print("... and released")
             break
     import pyb
     pyb.hard_reset()
@@ -913,7 +623,7 @@ def Calibration_Mode():
             #   and user must hit go twice(once to turn sound off, once to
             #   resume). After error, return to the pre-calibration stage by
             #   breaking from the 2nd loop back to the 1st loop.
-            Output = ImportSong()
+            Output = Import.Song()
             if Output == "Error Occrured":
                 # Error occured, handle the error, then break out of the 2nd 
                 #   layer to the 1st layer
@@ -922,7 +632,7 @@ def Calibration_Mode():
             # Song imported, import calibration. If there is an issue, go to
             #   error and wait for user input upon which it breaks back into
             #   the 1st loop.
-            Output = ImportCalibration()
+            Output = Import.Calibration()
             if Output == "Error Occrured":
                 break
             
@@ -1127,7 +837,7 @@ def Leveling_Mode():
             YellowLED.high()
             
             # User has hit Go, read the piano board via ImportSong()
-            Output = ImportSong()
+            Output = Import.Song()
             
             # Check Output for if an error occured
             if Output == "Error Occured":
@@ -1138,7 +848,7 @@ def Leveling_Mode():
 
             # ImportSong() had no issues, continue by importing Calibration
             #   Data
-            Output = ImportCalibration()
+            Output = Import.Calibration()
             
             # Check Output of ImportCalibration for errors
             if Output == "Error Occured":
@@ -1156,7 +866,7 @@ def Leveling_Mode():
 
             # Import BoltPatternXXX.csv file for the X-Beam just to check
             #   that it is both present and valid.
-            Output = ImportBoltPattern()
+            Output = Import.BoltPattern()
             
             # Check the output for an error
             if type(Output) == str:
@@ -1442,7 +1152,7 @@ def Assembly_Mode():
     #   BoltPatternXXX.csv
     while True:
 #        print("ImportBoltPattern function called")
-        Output = ImportBoltPattern()
+        Output = Import.BoltPattern()
         if type(Output) == str:
             # Error Occured
 #            print("Error importing Bolt Pattern csv file.")
@@ -1604,18 +1314,19 @@ import pyb
 import utime
 
 # Pin Definition
-#print("Creating pins")
+print("Creating pins")
 
 # Notable stepper driver pins
 
 # LED Pin Definition
-RedLED = pyb.Pin (pyb.Pin.cpu.C11, mode = pyb.Pin.OUT_PP, 
+print("    creating LED pins")
+RedLED = pyb.Pin (pyb.Pin.cpu.C4, mode = pyb.Pin.OUT_PP, 
                       pull = pyb.Pin.PULL_DOWN)
 
 YellowLED = pyb.Pin (pyb.Pin.cpu.C2, mode = pyb.Pin.OUT_PP, 
                          pull = pyb.Pin.PULL_DOWN)
 
-GreenLED = pyb.Pin (pyb.Pin.cpu.D2, mode = pyb.Pin.OUT_PP, 
+GreenLED = pyb.Pin (pyb.Pin.cpu.B0, mode = pyb.Pin.OUT_PP, 
                         pull = pyb.Pin.PULL_DOWN)
 
 # Piezzo Buzzer
@@ -1627,15 +1338,17 @@ BuzzerChannel.pulse_width_percent(0)
 
 # Solenoid and DC Motor Pin call outs and functions for controlling
 #   said pins.
-SolenoidLeftPin = pyb.Pin (pyb.Pin.cpu.B0, mode = pyb.Pin.OUT_PP,
+print("    Creating solenoid pins")
+SolenoidLeftPin = pyb.Pin (pyb.Pin.cpu.D2, mode = pyb.Pin.OUT_PP,
                            pull = pyb.Pin.PULL_DOWN)
 SolenoidLeftPin.high()
         
 SolenoidRightPin = pyb.Pin (pyb.Pin.cpu.B6, mode = pyb.Pin.OUT_PP,
                             pull = pyb.Pin.PULL_DOWN)
 SolenoidRightPin.high()
-        
-DCMotorLeftPin = pyb.Pin (pyb.Pin.cpu.A4, mode = pyb.Pin.OUT_PP,
+
+print("    Creating DC motor pins")
+DCMotorLeftPin = pyb.Pin (pyb.Pin.cpu.C11, mode = pyb.Pin.OUT_PP,
                           pull = pyb.Pin.PULL_DOWN)
 DCMotorLeftPin.high()
         
@@ -1646,10 +1359,12 @@ DCMotorRightPin.high()
 # Creating the Go button function call. Go() should give 0 or 1 depending on 
 #   the pin input. Basically, equating Go_Pin.value() to Go() so I do less
 #   typing.
+print("    Creating go pin")
 Go_Pin = pyb.Pin(pyb.Pin.cpu.C4, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_UP)
 Go = Go_Pin.value
 
 '''Three Position Swtich Pin'''
+print("    Creating 3 pos switch pin")
 ThreeSwitch_Pin = pyb.Pin(pyb.Pin.cpu.C3, mode = pyb.Pin.ANALOG)
 adc = pyb.ADC(ThreeSwitch_Pin)
 ThreeSwitch = adc.read
@@ -1670,7 +1385,7 @@ if type(Output)==str:
     sys.exit()
     
 # If there was no error, create all items
-#print("creating class objects")
+print("    creating class objects")
 
 
 '''Stepper Driver pin and  object creations'''
@@ -1684,8 +1399,16 @@ Board2 = l6470nucleo.Dual6470(1,ncs2,SCK) # Controls Left (1) and Right
                                           # (2) rail actuators
                                           # Beam Actuator (1)
 paramatarize()
+Board1.HardHiZ(1)
+Board1.GetStatus(1)
+Board1.HardHiZ(2)
+Board1.GetStatus(2)
+Board2.HardHiZ(1)
+Board2.GetStatus(1)
+Board2.HardHiZ(2)
+Board2.GetStatus(2)
 
-
+print("    creating interrupt for emergency stop")
 # The same as the Go pin, but greating a short function call for the emergency
 #   stop button. This pin is defined last as to prevent memory issues found
 #   importing task_share.
@@ -1696,6 +1419,9 @@ import micropython
 micropython.alloc_emergency_exception_buf(100)
 extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_UP,
                     callback)
+
+print("    importing misc files")
+import Import
 
 # Zero the above buffers
 zero_flags()
