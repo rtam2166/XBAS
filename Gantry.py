@@ -5,7 +5,7 @@ Created on Mon May 29 17:10:41 2017
 @author: drago
 """
 
-def Move(Board1,Destination, probe = False):
+def Move(Destination, probe = False):
     '''Function which utalizes code from the l6470nucleo.py file to drive the
     stepper motors.
     
@@ -114,7 +114,7 @@ def Move(Board1,Destination, probe = False):
         print("    Probe part of Move_Gantry_to() function not called")
         return("Done")
         
-def Home(Board1):
+def Home():
     '''Home the Beam Actuator.
     Function input:
         Board1 is the l6470nucleo.Dual6470 class object that the beam actuator
@@ -162,7 +162,7 @@ def Home(Board1):
             ErrGantry.put(1)
             return("Error Occured")
             
-def Status(Board1):
+def Status():
     '''Function prints out the Gantry's status on the repl
     Function Input:
         The l6470.Dual6470 class object that correlates to the
@@ -171,4 +171,4 @@ def Status(Board1):
         None'''
     Board1.GetStatus(2,verbose = 1)
     
-from setup import ErrGantry , ErrCalibration, ErrLeveling, ErrAssembly
+from setup import ErrGantry , ErrCalibration, ErrLeveling, ErrAssembly, Board1
