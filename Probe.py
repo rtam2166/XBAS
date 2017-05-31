@@ -15,7 +15,7 @@ def Move(Input):
     else:
         RaisePin.high()
         LowerPin.high()
-
+    
 def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
     '''Lower Probe, Take measurement, Check measurement, Raise the probe if no
     error. If not, throw an error.
@@ -27,41 +27,55 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
             returns message "Error Occured" if the reading is outside the
             given limits.
             '''
+    print("Home the Probe")
+    Home()
     print("Taking measurement with probe")
     print("    Lowering probe")
+    RefRead = ProbeEncoder.read()
     Move("down")
-    
-    tolerance = 10
-    previous = 100
+    start = utime.ticks_ms()
+    current = utime.ticks_ms()
+    tolerance = 5
     while True:
         # wait for readings from probe to change (delta) by the tolerance
-        #   amount. take readings every .5 sec
-        current = ProbeEncoder.read()
-        delta = current-previous
-        previous = current
-        print("        delta = "+str(delta))
-        print("        tolerance: "+str(tolerance))
-        if delta <= tolerance and delta >= -tolerance:
+        #   amount.
+        CurrentRead = ProbeEncoder.read()
+        delta = CurrentRead-RefRead
+        # A fuck ton of debuggin statements. ctr + 1 to comment or uncomment
+        #   sections of code FYI
+#        print("        Current reading =   "+str(CurrentRead))
+#        print("        Previous reading =  "+str(RefRead))
+        RefRead = CurrentRead
+#        print("        delta =             "+str(delta))
+#        print("        tolerance=          "+str(tolerance))
+#        print("        time passed in ms = "+str(current - start))
+#        print("        exit cond 1:        "+str(delta)+" >= "+str(tolerance)+\
+#                      " is "+str(delta <= tolerance))
+#        print("        exit cond 2:        "+str(delta)+" <= "+\
+#                      str(-tolerance)+" is "+str(delta >= -tolerance))
+#        print("        exit cond 3:        "+str(current - start)+\
+#                      " > 500 is "+str((current - start >500)))
+        if delta <= tolerance and delta >= -tolerance and \
+        (current - start >500):
             print("    Probe met surface")
             break
-        print("")
-        utime.sleep_ms(500)
+#        print("")
+        utime.sleep_ms(100)
+        current = utime.ticks_ms()
         
     
     # Check Reading is within the limits if the Limit flag is true
     Reading = ProbeEncoder.read()
+    print("        Probe read: "+str(Reading))
     if Limit == True:
         if Reading > UpperLimit or Reading < LowerLimit:
             print("    probe reading was above upper limit of readings")
-            global ErrProbe
             ErrProbe.put(1)
 
-    print("    Raising probe")
+    print("    Homing probe")
     Home()
     
-    Move("stop")
-    global ErrProbe
-    print("    ErrProbe = "+str(ErrProbe))
+    print("    ErrProbe = "+str(ErrProbe.get()))
     # If there was or was not an error
     if ErrProbe.get() == 0:
         print("    No error, exit")
@@ -85,8 +99,13 @@ def Home():
             current = utime.ticks_ms()
             if ProbeReference.value == 1 or (current - start) > 2000:
                 # True
-                print("        Probe is at reference tick, go to next "+\
-                      "object")
+                Move("Stop")
+                print("        Probe is at reference tick, Zero out encoder")
+                utime.sleep_ms(100)
+                ProbeEncoder.zero()
+                ProbeEncoder.position = 0
+                utime.sleep_ms(500)
+                print("        Probe homed at "+str(ProbeEncoder.position))
                 break
 
 def read():
@@ -121,7 +140,3 @@ LowerPin = pyb.Pin(pyb.Pin.cpu.B8, mode = pyb.Pin.OUT_PP,
 LowerPin.high()
 
 from setup import ErrProbe
-Home()
-utime.sleep_ms(500)
-ProbeEncoder.read()
-ProbeEncoder.zero()

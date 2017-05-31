@@ -22,37 +22,42 @@ def Move(Board1,Destination, probe = False):
             retrn the value read by the probe at the end. If not, then the
             function will return "Done".'''
     
-    DistancePerStep = 673/800000
-    xOffset = 00000     # Distance from gantry home position to the closest end
-                        #   of the X-Beam. Absolute distsnce in mm
-    xLimit = 490       # Maximum travel of the gantry from the end of the
+    DistancePerStep = 1/800
+    xOffset = 3.2       # Distance from gantry home position to the closest end
+                        #   of the X-Beam. Absolute distsnce in mm. 
+    xLimit = 775       # Maximum travel of the gantry from the end of the
                         #   X-Beam to the Lead Screw Raiser minus the gantry 
-                        #   width. Absolute units in mm.
+                        #   width. Absolute units in mm. Does not include the
+                        #   xOffset
     #ISSUE See above 2 variables
     import Probe
     
     print("Moving Gantry to position x: "+str(Destination))
     print("    Probe at the end of the move? "+str(probe))
     # Check that Destination is not outside of the limits
-    if Destination <= -xOffset:
+    if Destination + xOffset <= 0:
         # If the destination is less than -xOffset, then the destination is 
         #   behind the home position which would push the system against the 
         #   housing and possible break the switch.
         print("    Error Occured moving the Gantry, Destination behind home")
         ErrGantry.put(1)
+        Board1.HardHiZ(2)
+        Board1.GetStatus(2,verbose=0)
         return("Error Occured")
-    elif Destination  >= xLimit:
+    elif Destination+xOffset  >= xLimit:
         # If the destination is greater than the xLimit, the gantry is running
         #   the risk of crashing against the leadscrew bearing end support
         #   raiser.
-        print("    Error Occured moving the Gantry")
+        print("    Error Occured moving the Gantry, destination beyond max"+\
+              " limit")
         ErrGantry.put(1)
+        Board1.HardHiZ(2)
+        Board1.GetStatus(2,verbose=0)
         return("Error Occured")
-    print('''    Destination of Gantry within limits, Destination past'''+\
-          '''farthest position''')
+    print('''    Destination of Gantry within limits''')
     
     # Convert Destination in mm to revolutions to steps
-    Destination = int(Destination/DistancePerStep)
+    Destination = int((Destination-xOffset)/DistancePerStep)
     print("    Destination converted to "+str(Destination)+" number of steps")
     
     # Move to the new value of Destination
@@ -62,15 +67,22 @@ def Move(Board1,Destination, probe = False):
     # Wait for stall or finish flag
     print("    waiting for stall or completion of move command")
     while True:
-        if Board1.isBusy(2) == True:
+#        print("Busy? : "+str(Board1.isBusy(2)))
+#        print("Stalled? : "+str(Board1.isStalled(2)))
+        if Board1.isBusy(2) == False:
             # if finish, exit the function
             print("    Gantry in position, exit loop")
+            Board1.HardHiZ(2)
+            Board1.GetStatus(2,verbose=0)
             break
+        
         elif Board1.isStalled(2) == True:
             # if stall, stop gantry, throw error and return
             print('''    Error Occured moving the Gantry to position. '''+\
                  "Gantry stalled out")
             ErrGantry.put(1)
+            Board1.HardHiZ(2)
+            Board1.GetStatus(2,verbose=0)
             return("Error Occured")
     
     # If done moving gantry and probe option is true, take measurement
@@ -84,8 +96,8 @@ def Move(Board1,Destination, probe = False):
             reading = Probe.Probe()
         elif ErrAssembly.get() == 1 or ErrLeveling.get() == 1:
             print("    Probe called for Leveling and Assembly Mode")
-            UpprLimit = 1000
-            LwrLimit = -1000
+            UpprLimit = 1000000
+            LwrLimit = -1000000
             reading = Probe(Limit = True, UpperLimit = UpprLimit,
                             LowerLimit = LwrLimit)
 
@@ -106,7 +118,7 @@ def Home(Board1):
     global ErrGantry
     # Home Gantry Code. +/- 400 is the max speed of the gantry
     print("        Gantry GoUntil switch command")
-    Board1.GoUntil(2,-300)
+    Board1.GoUntil(2,-500)
     # Check home status in while loop
     while True:
         if Board1.isBusy(2) == False:
@@ -116,6 +128,7 @@ def Home(Board1):
             print("        Board stalled: "+str(Board1.isStalled(2)))
 #                motor stalled, return an error and set flag
             Board1.HardHiZ(2)
+            Board1.GetStatus(2,verbose=0)
             print("        Gantry Stalled during Home command")
             print("        ERROR ERROR ERROR, return error")
             ErrGantry.put(1)
@@ -130,10 +143,13 @@ def Home(Board1):
         if Board1.isBusy(2) == False:
             # Both rail actuators are homed, continue.
             print("        Gantry completed ReleaseSW Command")
+            Board1.HardHiZ(2)
+            Board1.GetStatus(2,verbose=0)
             break
         elif Board1.isStalled(2) == True:
             # motor stalled, return an error and set flag
             Board1.HardHiZ(2)
+            Board1.GetStatus(2,verbose=0)
             print("        Gantry Stalled during Home command")
             print("        ERROR ERROR ERROR, return error")
             ErrGantry.put(1)

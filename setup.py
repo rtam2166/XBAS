@@ -61,4 +61,3 @@ ErrFileCheck = task_share.Share ('i', thread_protect = False,
 #   combination of switches on the piano switch board.
 XBeam = task_share.Share ('i', thread_protect = False,
                           name = "X-Beam Length")
-zero_flags()
