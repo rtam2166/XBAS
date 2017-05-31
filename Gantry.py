@@ -163,6 +163,12 @@ def Home(Board1):
             return("Error Occured")
             
 def Status(Board1):
+    '''Function prints out the Gantry's status on the repl
+    Function Input:
+        The l6470.Dual6470 class object that correlates to the
+            Gantry
+    Function Output:
+        None'''
     Board1.GetStatus(2,verbose = 1)
     
 from setup import ErrGantry , ErrCalibration, ErrLeveling, ErrAssembly
