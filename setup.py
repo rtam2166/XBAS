@@ -176,7 +176,7 @@ def paramatarize():
     
          # Set the registers which need to be modified for the motor to go
             # This value affects how hard the motor is being pushed
-    K_VAL = 80
+    K_VAL = 60
     Board2._set_par_1b ('KVAL_HOLD', K_VAL)
     Board2._set_par_1b ('KVAL_RUN', K_VAL)
     Board2._set_par_1b ('KVAL_ACC', K_VAL)
@@ -268,7 +268,7 @@ def Solenoid(Side,Dir):
         SolenoidLeftPin.high()
         SolenoidRightPin.high()
             
-def Buzzer(Input,duty = 100):
+def Buzzer(Input,duty = 50):
     '''Function runs the buzzer, turning it on or off depending on the inputs.
     Function Inputs:
         Input can be one of the following.
@@ -349,13 +349,13 @@ print("Creating pins")
 
 # LED Pin Definition
 print("    creating LED pins")
-RedLED = pyb.Pin (pyb.Pin.cpu.A12, mode = pyb.Pin.OUT_PP, 
+RedLED = pyb.Pin (pyb.Pin.cpu.A8, mode = pyb.Pin.OUT_PP, 
                       pull = pyb.Pin.PULL_DOWN)
 
-YellowLED = pyb.Pin (pyb.Pin.cpu.A11, mode = pyb.Pin.OUT_PP, 
+YellowLED = pyb.Pin (pyb.Pin.cpu.B10, mode = pyb.Pin.OUT_PP, 
                          pull = pyb.Pin.PULL_DOWN)
 
-GreenLED = pyb.Pin (pyb.Pin.cpu.B12, mode = pyb.Pin.OUT_PP, 
+GreenLED = pyb.Pin (pyb.Pin.cpu.B4, mode = pyb.Pin.OUT_PP, 
                         pull = pyb.Pin.PULL_DOWN)
 
 YellowLED.high()
@@ -363,10 +363,9 @@ RedLED.low()
 GreenLED.low()
 
 # Piezzo Buzzer
-BuzzerPin = pyb.Pin(pyb.Pin.cpu.A3, mode = pyb.Pin.OUT_PP, 
-                        pull = pyb.Pin.PULL_DOWN)
-timBuzzer = pyb.Timer(2,freq = 1500)
-BuzzerChannel = timBuzzer.channel(4, pyb.Timer.PWM, pin = BuzzerPin)
+BuzzerPin = pyb.Pin(pyb.Pin.cpu.A1, mode = pyb.Pin.OUT_PP)
+timBuzzer = pyb.Timer(5,freq = 2730)
+BuzzerChannel = timBuzzer.channel(2, pyb.Timer.PWM, pin = BuzzerPin)
 BuzzerChannel.pulse_width_percent(0)
 
 # Solenoid and DC Motor Pin call outs and functions for controlling
