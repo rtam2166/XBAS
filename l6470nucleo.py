@@ -226,6 +226,7 @@ class Dual6470:
         # @param value is an integer input from 1 to 64 which corresponds to a
         #               current of x*31.25mA where x is the input from 1 to 16
         self._set_par_1b('STALL_TH', value)    
+#        utime.sleep(10)
     
     def _set_MicroSteps(self, SYNC_Enable, SYNC_Select, num_STEP):
         ## Set the number of Microsteps to use, the SYNC output frequency, and the
@@ -245,6 +246,7 @@ class Dual6470:
         else:
             SYNC_EN_Mask = 0x00
         self._set_par_1b('STEP_MODE', SYNC_EN_Mask|stepval|SYNC_Select)
+#        utime.sleep(5)
         
     def _read_bytes (self, num_bytes):
         ## Read a set of arguments which have been sent by the L6470's in
@@ -295,6 +297,7 @@ class Dual6470:
         self._sndbs (highb, highb)
         lowb = num & 0xFF
         self._sndbs (lowb, lowb)
+#        utime.sleep(1)
 
     def _set_par_1b (self, reg_name, num):
         ## Set a parameter to both L6740 drivers, in a register which needs 
@@ -304,6 +307,7 @@ class Dual6470:
         reg = self.REGISTER_DICT[reg_name][0]
         self._sndbs (reg, reg)
         self._sndbs (num, num)
+#        utime.sleep(1)
 
     def _sndbs (self, byte_1, byte_2):
         ## Send one command byte to each L6470. No response is expected.
@@ -390,28 +394,28 @@ class Dual6470:
 
     '''-------------------------------------------------------'''
 
-#    def Move (self, motor, steps, direc = None):
-#        ## Tell motor driver @c motor to move @c num_steps in the direction
-#        #  @c direction. 
-#        #  @param motor Which motor to move, either 1 or 2
-#        #  @param steps How many steps to move, in a 20 bit number 
-#        #  @param direc The direction in which to move, either 0 for one
-#        #      way or nonzero for the other; if unspecified, the sign of the
-#        #      number of steps will be used, positive meaning direction 0
-#
-#        # Figure out the intended direction
-#        if direc == None:
-#            if steps <= 0:
-#                direc = 1
-#                steps = -steps
-#            else:
-#                direc = 0
-#        else:
-#            if direc != 0:
-#                direc = 1
-#
-#        # Call the _cmd_3b() method to do most of the work
-#        self._cmd_3b (motor, self.COMMAND_DICT['Move'] | direc, steps & 0x003FFFFF)
+    def Move (self, motor, steps, direc = None):
+        ## Tell motor driver @c motor to move @c num_steps in the direction
+        #  @c direction. 
+        #  @param motor Which motor to move, either 1 or 2
+        #  @param steps How many steps to move, in a 20 bit number 
+        #  @param direc The direction in which to move, either 0 for one
+        #      way or nonzero for the other; if unspecified, the sign of the
+        #      number of steps will be used, positive meaning direction 0
+
+        # Figure out the intended direction
+        if direc == None:
+            if steps <= 0:
+                direc = 1
+                steps = -steps
+            else:
+                direc = 0
+        else:
+            if direc != 0:
+                direc = 1
+
+        # Call the _cmd_3b() method to do most of the work
+        self._cmd_3b (motor, self.COMMAND_DICT['Move'] | direc, steps & 0x003FFFFF)
 
 
     '''-------------------------------------------------------'''
@@ -602,6 +606,13 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
             return(True)
         else:
             return(False)
+            
+    def isHome(self,motor):
+        status = self.GetStatus(1,verbose = 0)
+        if status[motor-1] & (1<<2):
+            return(True)
+        else:
+            return(False)
     '''-------------------------------------------------------'''
     def Print_Status(self, motor, status):
         """ Formatted printing of status codes for the driver.
@@ -667,7 +678,6 @@ register is reset (ACT = '0') or the ABS_POS register value is copied into the M
             print("  External switch is closed (grounded).")
         else:
             print("  External switch is open.")
-
 
 #setLoSpdOpt(boolean enable);
 #configSyncPin(byte pinFunc, byte syncSteps);
