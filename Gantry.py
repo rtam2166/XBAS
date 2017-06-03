@@ -64,6 +64,9 @@ def Move(Destination, probe = False):
     print("    Moving Gantry to Destination")
     Board1.GoTo(2,Destination)
     
+    utime.sleep(1)
+    Board1.GetStatus(2,verbose=0)
+    
     # Wait for stall or finish flag
     print("    waiting for stall or completion of move command")
     while True:
@@ -76,14 +79,14 @@ def Move(Destination, probe = False):
             Board1.GetStatus(2,verbose=0)
             break
         
-        elif Board1.isStalled(2) == True:
-            # if stall, stop gantry, throw error and return
-            print('''    Error Occured moving the Gantry to position. '''+\
-                 "Gantry stalled out")
-            ErrGantry.put(1)
-            Board1.HardHiZ(2)
-            Board1.GetStatus(2,verbose=0)
-            return("Error Occured")
+#        elif Board1.isStalled(2) == True:
+#            # if stall, stop gantry, throw error and return
+#            print('''    Error Occured moving the Gantry to position. '''+\
+#                 "Gantry stalled out")
+#            ErrGantry.put(1)
+#            Board1.HardHiZ(2)
+#            Board1.GetStatus(2,verbose=0)
+#            return("Error Occured")
     
     # If done moving gantry and probe option is true, take measurement
     if probe == True:
@@ -122,24 +125,28 @@ def Home():
     Function output:
         outputs and "Error Occured" if there is an error.
         '''
-        
+    if Board1.isHome(2)==True:
+        print('        Gantry is already homed')
+        return
     # Home Gantry Code. +/- 400 is the max speed of the gantry
     print("        Gantry GoUntil switch command")
     Board1.GoUntil(2,-500)
+    utime.sleep(5)
+    Board1.GetStatus(2, verbose = 0)
     # Check home status in while loop
     while True:
         if Board1.isBusy(2) == False:
             # gantry at switch, continue.
             break
-        elif Board1.isStalled(2) == True:
-            print("        Board stalled: "+str(Board1.isStalled(2)))
-#                motor stalled, return an error and set flag
-            Board1.HardHiZ(2)
-            Board1.GetStatus(2,verbose=0)
-            print("        Gantry Stalled during Home command")
-            print("        ERROR ERROR ERROR, return error")
-            ErrGantry.put(1)
-            return("Error Occured")
+#        elif Board1.isStalled(2) == True:
+#            print("        Board stalled: "+str(Board1.isStalled(2)))
+##                motor stalled, return an error and set flag
+#            Board1.HardHiZ(2)
+#            Board1.GetStatus(2,verbose=0)
+#            print("        Gantry Stalled during Home command")
+#            print("        ERROR ERROR ERROR, return error")
+#            ErrGantry.put(1)
+#            return("Error Occured")
 
     # Release switch for gantry
     print("        releasing switch for gantry")
@@ -153,14 +160,14 @@ def Home():
             Board1.HardHiZ(2)
             Board1.GetStatus(2,verbose=0)
             break
-        elif Board1.isStalled(2) == True:
-            # motor stalled, return an error and set flag
-            Board1.HardHiZ(2)
-            Board1.GetStatus(2,verbose=0)
-            print("        Gantry Stalled during Home command")
-            print("        ERROR ERROR ERROR, return error")
-            ErrGantry.put(1)
-            return("Error Occured")
+#        elif Board1.isStalled(2) == True:
+#            # motor stalled, return an error and set flag
+#            Board1.HardHiZ(2)
+#            Board1.GetStatus(2,verbose=0)
+#            print("        Gantry Stalled during Home command")
+#            print("        ERROR ERROR ERROR, return error")
+#            ErrGantry.put(1)
+#            return("Error Occured")
             
 def Status():
     '''Function prints out the Gantry's status on the repl
@@ -170,5 +177,5 @@ def Status():
     Function Output:
         None'''
     Board1.GetStatus(2,verbose = 1)
-    
+import utime
 from setup import ErrGantry , ErrCalibration, ErrLeveling, ErrAssembly, Board1

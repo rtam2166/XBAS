@@ -41,7 +41,7 @@ def Move(Destination, probe = False):
         ErrBeamAct.put(1)
         return("Error Occured")
     elif Destination+Offset  >= (Limit):
-        # If the destination is greater than the xLimit, the gantry is running
+        # If the destination is greater than the xLimit, the beam actuator is running
         #   the risk of crashing against the leadscrew bearing end support
         #   raiser.
         print("    Error Occured moving the Beam Actuator, destination past"+\
@@ -71,16 +71,16 @@ def Move(Destination, probe = False):
             Board1.GetStatus(1,verbose = 0)
             break
         
-        elif Board1.isStalled(1) == True:
-            # if stall, stop gantry, throw error and return
-            print("    Error Occured moving the Beam Actuator to position. "+\
-                 "Beam Actuator stalled out")
-            ErrBeamAct.put(1)
-            Board1.HardHiZ(1)
-            Board1.GetStatus(1,verbose = 0)
-            return("Error Occured")
+#        elif Board1.isStalled(1) == True:
+#            # if stall, stop beam actuator, throw error and return
+#            print("    Error Occured moving the Beam Actuator to position. "+\
+#                 "Beam Actuator stalled out")
+#            ErrBeamAct.put(1)
+#            Board1.HardHiZ(1)
+#            Board1.GetStatus(1,verbose = 0)
+#            return("Error Occured")
     
-    # If done moving gantry and probe option is true, take measurement
+    # If done moving beam actuator and probe option is true, take measurement
     if probe == True:
         print("    Probe part of BeamActuator.Move() function called")
         reading = Probe.Probe()
@@ -88,12 +88,12 @@ def Move(Destination, probe = False):
         if type(reading) == "Error Occured":
             # Error occured, but should have been solved as the Probe function
             #   shouldn't be able to finish if there was an error.
-            print("    Error occured with probe in the Move_Gantry_to()")
+            print("    Error occured with probe in the Move_beam actuator_to()")
             return("Error Occured")
         else:
             print("    No error occured with probe in the BeamActuator.Move()")
             return(reading)
-    # Else if the gantry is done moving and probe option in false, return
+    # Else if the beam actuator is done moving and probe option in false, return
     elif probe == False:
         Board1.HardHiZ(1)
         Board1.GetStatus(1,verbose = 0)
@@ -108,8 +108,11 @@ def Home():
     Function output:
         outputs and "Error Occured" if there is an error.
         '''
+    if Board1.isHome(1)==True:
+        print('        Beam Actuator already homed')
+        return
         
-    # Home Gantry Code. +/- 400 is the max speed of the gantry
+    # Home beam actuator Code. +/- 400 is the max speed of the beam actuator
     print("        Beam Actuator GoUntil switch command")
     Board1.GetStatus(1,verbose = 0)
     Board1.GoUntil(1,-400)
@@ -117,23 +120,23 @@ def Home():
     # Check home status in while loop
     while True:
         if Board1.isBusy(1) == False:
-            # gantry at switch, continue.
+            # beam actuator at switch, continue.
             print("        Board isn't busy anymore")
 #            Board1.GetStatus(1)
             Board1.HardHiZ(1)
             Board1.GetStatus(1,verbose = 0)
             break
-        elif Board1.isStalled(1) == True:
-            print("        Board stalled: "+str(Board1.isStalled(1)))
-#                motor stalled, return an error and set flag
-            Board1.HardHiZ(1)
-            Board1.GetStatus(1,verbose = 0)
-            print("        Beam Actuator Stalled during Home command")
-            print("        ERROR ERROR ERROR, return error")
-            ErrBeamAct.put(1)
-            return("Error Occured")
+#        elif Board1.isStalled(1) == True:
+#            print("        Board stalled: "+str(Board1.isStalled(1)))
+##                motor stalled, return an error and set flag
+#            Board1.HardHiZ(1)
+#            Board1.GetStatus(1,verbose = 0)
+#            print("        Beam Actuator Stalled during Home command")
+#            print("        ERROR ERROR ERROR, return error")
+#            ErrBeamAct.put(1)
+#            return("Error Occured")
 
-    # Release switch for gantry
+    # Release switch for beam actuator
     print("        releasing switch for Beam Actuator")
     Board1.ReleaseSW(1,1)
     utime.sleep_ms(500)
@@ -145,23 +148,21 @@ def Home():
             # Both rail actuators are homed, continue.
             print("        Beam Actuator completed ReleaseSW Command")
             Board1.HardHiZ(1)
-            Board1.GetStatus(1,verbose = 1)
+            status = Board1.GetStatus(1,verbose = 0)
+            if status[1-1] & (1<<2) == False:
+                break
+            else:
+                Board1.ReleaseSW(1,1)
+#        elif Board1.isStalled(1) == True:
+#            # motor stalled, return an error and set flag
+#            Board1.HardHiZ(1)
+#            Board1.GetStatus(1,verbose = 0)
+#            print("        Beam Actuator Stalled during Home command")
+#            print("        ERROR ERROR ERROR, return error")
+#            ErrBeamAct.put(1)
+#            return("Error Occured")
+        if Board1.isHome(1) == False:
             break
-        elif Board1.isStalled(1) == True:
-            # motor stalled, return an error and set flag
-            Board1.HardHiZ(1)
-            Board1.GetStatus(1,verbose = 0)
-            print("        Beam Actuator Stalled during Home command")
-            print("        ERROR ERROR ERROR, return error")
-            ErrBeamAct.put(1)
-            return("Error Occured")
-        current = utime.ticks_ms()
-#        print("            timed "+str(current - start))
-        if current - start > 1000:
-            print("        retrying")
-            Board1.ReleaseSW(1,1)
-            utime.sleep_ms(1000)
-            start = utime.ticks_ms()
 
 def Status():
     '''Print information about the board's status for the Beam actuator

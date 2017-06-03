@@ -93,7 +93,6 @@ def FileCheck():
               "the go once to turn the noise off")
         # Perfrom special error handling unique to this function which must be
         #   done here for the system to work
-        import utime
         RedLED.high()
         YellowLED.high()
         GreenLED.high()
@@ -140,9 +139,11 @@ def paramatarize():
     Function Outputs:
         None
         '''
+    print('    parameterizing')
     # Set the registers which need to be modified for the motor to go
     # This value affects how hard the motor is being pushed
-    K_VAL = 80
+    print('    parameterizing board 1')
+    K_VAL = 65
     Board1._set_par_1b ('KVAL_HOLD', K_VAL)
     Board1._set_par_1b ('KVAL_RUN', K_VAL)
     Board1._set_par_1b ('KVAL_ACC', K_VAL)
@@ -158,6 +159,11 @@ def paramatarize():
     # Set the maximum speed at which motor will run
     MAX_SPEED = 30
     Board1._set_par_2b ('MAX_SPEED', MAX_SPEED)
+    
+    # Set the minimum speed at which motor will run
+    MIN_SPEED = 15
+    Board1._set_par_2b ('MIN_SPEED', MIN_SPEED)
+        
     # Set the maximum acceleration and deceleration of motor
     ACCEL = 1
     DECEL = 20
@@ -174,8 +180,9 @@ def paramatarize():
     STALL_TH = 127
     Board1._setStallThreshold(STALL_TH)
     
-         # Set the registers which need to be modified for the motor to go
-            # This value affects how hard the motor is being pushed
+    print('    parameterizing board 2')
+     # Set the registers which need to be modified for the motor to go
+        # This value affects how hard the motor is being pushed
     K_VAL = 60
     Board2._set_par_1b ('KVAL_HOLD', K_VAL)
     Board2._set_par_1b ('KVAL_RUN', K_VAL)
@@ -193,7 +200,7 @@ def paramatarize():
     MAX_SPEED = 20
     Board2._set_par_2b ('MAX_SPEED', MAX_SPEED)
     # Set the maximum acceleration and deceleration of motor
-    ACCEL = 5
+    ACCEL = 12
     DECEL = 12
     Board2._set_par_2b ('ACC', ACCEL)
     Board2._set_par_2b ('DEC', DECEL)
@@ -292,10 +299,13 @@ def callback(line):
     the emergecny stop button is pressed down. It waits until the emergency
     stop has been disengaged and initiates a soft restart'''
     print("Emergency Stop pressed...")
+    RedLED.high()
     while True:
         if Stop_Pin.value() == 0:
             print("... and released")
+            RedLED.low()
             break
+
     import pyb
     pyb.hard_reset()
     
@@ -323,25 +333,26 @@ def Mode():
     
     # Check if the first position has been selected
     if (value <= (V1 + tolerance)) and (value >= (V1 - tolerance)):
-        print("Selected Mode 1")
+#        print("Selected Mode 1")
         return(1)
            
     # Check if the second position has been selected
     elif (value <= (V2 + tolerance)) and (value >= (V2 - tolerance)):
-        print("Selected Mode 2")
+#        print("Selected Mode 2")
         return(2)
            
     # Check if the third position has been selected
     elif value <= V3 + tolerance and value >= V3 - tolerance:
-        print("Selected Mode 3")
+#        print("Selected Mode 3")
         return(3)
            
     else:
-        print("No Mode Selected")
+#        print("No Mode Selected")
         return(0)
         
 import pyb
-
+import utime
+start = utime.ticks_ms()
 # Pin Definition
 print("Creating pins")
 
@@ -417,7 +428,7 @@ if type(Output)==str:
     sys.exit()
     
 # If there was no error, create all items
-print("    creating class objects")
+print("Creating class objects")
 
 '''Stepper Driver pin and  object creations'''
 import l6470nucleo                  # Import file
@@ -443,12 +454,12 @@ print("    creating interrupt for emergency stop")
 # The same as the Go pin, but greating a short function call for the emergency
 #   stop button. This pin is defined last as to prevent memory issues found
 #   importing task_share.
-Stop_Pin = pyb.Pin(pyb.Pin.cpu.C5, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_UP)
+Stop_Pin = pyb.Pin(pyb.Pin.cpu.C5, mode = pyb.Pin.IN, pull = pyb.Pin.PULL_DOWN)
 
 '''External Interrupt Pin'''
 import micropython
 micropython.alloc_emergency_exception_buf(100)
-extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_UP,
+extint = pyb.ExtInt(Stop_Pin, pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_DOWN,
                     callback)
     
 import task_share
@@ -486,3 +497,5 @@ ErrFileCheck = task_share.Share ('i', thread_protect = False,
 #   combination of switches on the piano switch board.
 XBeam = task_share.Share ('i', thread_protect = False,
                           name = "X-Beam Length")
+current = utime.ticks_ms()
+print('importing setup.py took '+str((current - start)/1000)+' seconds')

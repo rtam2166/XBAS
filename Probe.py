@@ -43,7 +43,7 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
     Move("down")
     start = utime.ticks_ms()
     current = utime.ticks_ms()
-    tolerance = 5
+    tolerance = 1
     while True:
         # wait for readings from probe to change (delta) by the tolerance
         #   amount.

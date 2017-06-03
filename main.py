@@ -11,12 +11,11 @@ import utime
 import Gantry
 import Probe
 import BeamActuator
+import RailAct
 import setup
 from setup import ErrInit,\
-                    ErrSleep,\
                     ErrCalibration,\
-                    ErrLeveling, \
-                    ErrAssembly, \
+                    ErrLeveling,\
                     ErrBoltCsv,\
                     ErrCalCsv,\
                     ErrGantry,\
@@ -96,6 +95,12 @@ def Lights_Sound_Action():
         Red = 0
         Blink = 1
         print("    One or Both of the Rail Actuators Error detected")
+    elif ErrBoltCsv.get() == 1 or ErrCalCsv.get() == 1:
+        Green = 1
+        Yellow = 1
+        Red = 1
+        Blink = 0
+        print("    Missing file")
     else:
         # No error, Set Green LED, turn noise on 1 sec
         print("    No Error detected, doing the green light and 1 second beep")
@@ -114,11 +119,12 @@ def Lights_Sound_Action():
             #   is not 0 meaning user hit go at some point.
             if Stop == 0:
                 Buzzer('On')
-#                print("Sound On")
+                print("Sound On")
             else:
-#                print("Sound Off")
+                print("Sound Off")
                 Buzzer('Off')
             # Check what LEDs should be on
+            print('LEDs on')
             if Green == 1:
                 GreenLED.high()
             if Yellow == 1:
@@ -127,21 +133,21 @@ def Lights_Sound_Action():
                 RedLED.high()
         else:
             # Buzzer should be off
-#            print("Sound Off")
+            print("Sound Off")
             Buzzer('Off')
                 
             # Check what LEDs should be blinking. If so, then the LEDs now
             #   need to be off.
             if Blink == 1:
-#                print("LEDs off")
+                print("LEDs off")
                 if Green == 1:
                     GreenLED.low()
                 if Yellow == 1:
                     YellowLED.low()
                 if Red == 1:
                     RedLED.low()
-#        print("Go pressed: "+str(Stop))
-#        print("Go() reads "+str(Go())+"\r\r\n")
+        print("Go pressed: "+str(Stop))
+        print("Go() reads "+str(Go())+"\r\r\n")
                   
         Current = utime.ticks_ms()
         # Wait in the below while loop until the difference in time from the 
@@ -166,7 +172,7 @@ def Lights_Sound_Action():
         if Stop == 2:
             Lights_Sound_Off()
             YellowLED.high()
-#            print("Exiting Lights_Sound_Action()")
+            print("Exiting Lights_Sound_Action()")
             return()
             
         # Toggle switch so the system toggles sound and LEDs
@@ -181,18 +187,19 @@ def ErrorHandler():
     '''
     
     # print statements for debugging purposes
-#    print("Beginning Error Handling")
-#    print("ErrInit =        "+str(ErrInit))
-#    print("ErrSleep =       "+str(ErrSleep))
-#    print("ErrCalibration = "+str(ErrCalibration))
-#    print("ErrLeveling =    "+str(ErrLeveling))
-#    print("ErrAssembly =    "+str(ErrAssembly))
-#    print("ErrProbe =       "+str(ErrProbe))
-#    print("ErrGantry =      "+str(ErrGantry))
-#    print("ErrBeamAct =     "+str(ErrBeamAct))
-#    print("ErrRailActR =    "+str(ErrRailActR))
-#    print("ErrRailActL =    "+str(ErrRailActL))
-#    print("")
+    from setup import ErrSleep, ErrAssembly
+    print("Beginning Error Handling")
+    print("ErrInit =        "+str(ErrInit))
+    print("ErrSleep =       "+str(ErrSleep))
+    print("ErrCalibration = "+str(ErrCalibration))
+    print("ErrLeveling =    "+str(ErrLeveling))
+    print("ErrAssembly =    "+str(ErrAssembly))
+    print("ErrProbe =       "+str(ErrProbe))
+    print("ErrGantry =      "+str(ErrGantry))
+    print("ErrBeamAct =     "+str(ErrBeamAct))
+    print("ErrRailActR =    "+str(ErrRailActR))
+    print("ErrRailActL =    "+str(ErrRailActL))
+    print("")
                   
     # There was no issues with all of the named error flags, check all of the
     #   other error flags
@@ -273,48 +280,11 @@ def Home(*arg):
             
     # Now Home Righ and Left rail actuator
 #    print("    Homing one or both rail actuators")
-    if ('RailActR' in arg) or ('All' in arg) or ('RailAct' in arg):
-        # Home right actuator. Speed is up for debate
-#        print("        Homing the right rail actuator")
-        Board2.GoUntil(2,-400)
+#    if ('RailActR' in arg) or ('All' in arg) or ('RailAct' in arg):
+#        RailAct.Home(1)
                 
-    if ('RailActL' in arg) or ('All' in arg) or ('RailAct' in arg):
-        # Home left actuator
-#        print("        Homing the left rail actuator")
-        Board2.GoUntil(1,-400)
-                
-    if ('RailActR' in arg) or ('RailActL' in arg) or ('All' in arg) or \
-        ('RailAct' in arg):
-#        print("        checking rail actuators for completion of move")
-                
-        # Check home status in while loop
-        while True:
-            if Board2.isBusy(1) == 1:
-                # Both rail actuators are @ their switches, continue.
-#                print("        actuator switches have been pressed, busy "+\
-#                      "pin high")
-                break
-    
-        # Rail Actuator @ swithces, release switch to back them off of
-        #   switch which is their homed position.
-        if ('RailActR' in arg) or ('All' in arg) or ('RailAct' in arg):
-            # Release Switch Right
-#            print("        releasing right switch")
-            Board2.ReleaseSW(2,1)
-                
-        if ('RailActL' in arg) or ('All' in arg) or ('RailAct' in arg):
-            # Home left actuator
-#            print("        releasing left switch")
-            Board2.ReleaseSW(1,1)
-        
-        # Check status via while loop
-        while True:
-            if Board2.isBusy(1) == 1:
-#                print("        actuator switches have been pressed, busy "+\
-#                      "pin high")
-                Board2.HardHiZ(1)
-                Board2.HardHiZ(2)
-                break
+#    if ('RailActL' in arg) or ('All' in arg) or ('RailAct' in arg):
+#        RailAct.Home(2)
             
     # Home screwdriver DC Motors and Solenoids
     if ('Screwdrivers' in arg) or ('All' in arg):
@@ -755,6 +725,7 @@ def Leveling_Mode():
     # End of the First Layer
                         
 def TorqueDown(Input):
+    from setup import ErrAssembly
     '''Function Torques down the side indicated by the input
     Function inputs:
         Input is a character "L" or "R", indicating that either the
@@ -925,6 +896,7 @@ def TorqueDown(Input):
         # End of 1st layer, resume at beginning 
 
 def Assembly_Mode():
+    from setup import ErrAssembly
     '''Function that runs after the beam is leveled to force rails into 
     position and torque them down.
     Function Inputs:
@@ -1002,7 +974,7 @@ def Sleep_Mode(Input):
     Function Outputs:
         Time spent in the sleep mode after if finishes homing with no issues.
     '''
-    
+    from setup import ErrSleep
     # Turn all lights and sounds off, then turn on yellow lED
     Lights_Sound_Off()
     YellowLED.high()
@@ -1018,24 +990,24 @@ def Sleep_Mode(Input):
     # Pre-Sleep mode: Wait in while loop for one of two exit conditions.
     #   1) User hits go
     #   2) User changes the system mode to something that isn't the sleep mode
-#    print("Sleep mode pre-stage")
-#    Timer = 0                   # Creating a timer variable
-#    Start = utime.ticks_ms()    # Creating a starting reference time
+    print("Sleep mode pre-stage")
+    Timer = 0                   # Creating a timer variable
+    Start = utime.ticks_ms()    # Creating a starting reference time
     while True:
-#        if Timer > 600000:  # 10 min * 60s/min * 1000ms/s
-##            print("Timed Out, going to sleep")
-#            break
+        if Timer > 60000:  # 1 min * 60s/min * 1000ms/s
+            print("Timed Out, going to sleep")
+            break
         if Go() == 1:
-#            print("Go pressed, going to sleep")
+            print("Go pressed, going to sleep")
             break
         elif Mode() != 2:
-#            print("Another mode selected, exiting function")
+            print("Another mode selected, exiting function")
             return(1000)
         # increment Timer
 #        print("Time in Sleep pre-stage: "+str(Timer)+" ms")
-#        Current = utime.ticks_ms()
-#        Timer = Current - Start + Timer
-#        Start = Current
+        Current = utime.ticks_ms()
+        Timer = Current - Start + Timer
+        Start = Current
     
     # User must have hit go to have reached this point of the program. Turn of
     #   lights, turn yellow LED, then enter the new while loop that will try to
@@ -1046,6 +1018,7 @@ def Sleep_Mode(Input):
     #   than that, it doesnt run the Home() function.
     if Input >= 500:
         Lights_Sound_Off()
+        print(' check')
         YellowLED.high()
         while True:
 #            print("Time spend in main checking Mode() >500ms")
@@ -1081,21 +1054,21 @@ def Sleep_Mode(Input):
             #   time, and exit the sleep function while returning time spent in
             #   sleep mode
             ErrSleep.put(0)
-#            Current = utime.ticks_ms()
-#            Timer = Timer + Current-Start
-#            print("User has changed the mode, waking up")
+            Current = utime.ticks_ms()
+            Timer = Timer + Current-Start
+            print("User has changed the mode, waking up")
             return(600)
-#        elif Mode() == 2 and Timer < 600:
-#            # User has not selected another mode, increment the timer and sleep
-#            #   for 500ms minus how long it took to do get the current time.
-#            #   Also, if Timer > 600ms, the Timer will stop incrementing to
-#            #   prevent possible issues.
-#            Current = utime.ticks_ms()
-#            Timer = Timer + Current-Start
-#            if 500-(Current-Start) >= 0:
-#                utime.sleep_ms(500-(Current-Start))
-#            Start = Current
-#            print("shh, i've been asleep for "+str(Timer)+" ms")
+        elif Mode() == 2 and Timer < 600:
+            # User has not selected another mode, increment the timer and sleep
+            #   for 500ms minus how long it took to do get the current time.
+            #   Also, if Timer > 600ms, the Timer will stop incrementing to
+            #   prevent possible issues.
+            Current = utime.ticks_ms()
+            Timer = Timer + Current-Start
+            if 500-(Current-Start) >= 0:
+                utime.sleep_ms(500-(Current-Start))
+            Start = Current
+            print("shh, i've been asleep for "+str(Timer)+" ms")
 #//////////////////////////////////////////////////////////////////////////////
 '''                              Main Program                               '''
 #//////////////////////////////////////////////////////////////////////////////
@@ -1103,8 +1076,136 @@ def Sleep_Mode(Input):
 print("    importing misc files")
 import Import
 
-# Zero the above buffers
+# Zero the buffers
 zero_flags()
+    
+def test1():
+    YellowLED.high()
+#    Probe.Home()
+#    BeamActuator.Home()
+#    Gantry.Home()
+    Lights_Sound_Off()
+    while True:
+    # Wait for user to hit go or to switch system modes to a
+    #   different mode
+        utime.sleep(1)
+        print("Waiting in pre-Assembly Stage")
+        while True:
+            GreenLED.high()
+            if Go() == 1:
+                # Go was pressed, exit the 3rd Layer while loop and
+                #   resume the 2nd layer loop via a break command
+                print("User hit Go, continue leveling and assmembly")
+                YellowLED.high()
+                GreenLED.low()
+                break
+            elif Mode() != 3:
+                utime.sleep_ms(250)
+                if Mode() != 3:
+                    print('exit')
+                    return
+                
+        Gantry.Move(100)
+        utime.sleep(5)
+        Probe.Move('down')
+        utime.sleep(2)
+        Probe.Move('up')
+        utime.sleep(5)
+        Gantry.Move(200)
+        utime.sleep(5)
+        Probe.Move('down')
+        utime.sleep(2)
+        Probe.Move('up')
+        utime.sleep(5)
+        Gantry.Move(300)
+        utime.sleep(5)
+        Probe.Move('down')
+        utime.sleep(2)
+        Probe.Move('up')
+        utime.sleep(5)
+        BeamActuator.Move(1)
+        utime.sleep(5)
+        BeamActuator.Move(5)
+        utime.sleep(5)
+        Probe.Move('down')
+        utime.sleep(2)
+        Probe.Move('up')
+        utime.sleep(5)
+        Probe.Move('down')
+        utime.sleep(2)
+        Probe.Move('up')
+        utime.sleep(5)
+        Probe.Home()
+        BeamActuator.Home()
+        Gantry.Home()
+        Lights_Sound_Action()
+def test2():
+    while True:
+        YellowLED.high()
+        Lights_Sound_Off()
+        print("Waiting in pre Stage")
+        while True:
+            GreenLED.high()
+            if Go() == 1:
+                # Go was pressed, exit the 3rd Layer while loop and
+                #   resume the 2nd layer loop via a break command
+                print("User hit Go, continue leveling and assmembly")
+                Lights_Sound_Off()
+                utime.sleep_ms(500)
+                break
+            elif Mode() != 1:
+                # Else if the 3 position switch is not set to 3 which
+                #   is the assembly mode, then exit this function via 
+                #   return
+                utime.sleep_ms(250)
+                if Mode() != 1:
+                    print("User selected different mode, exit function")
+                    return()
+        ErrBoltCsv.put(1)
+        Lights_Sound_Action()
+        zero_flags()
+        utime.sleep_ms(500)
+        ErrSong.put(1)
+        Lights_Sound_Action()
+        zero_flags()
+        utime.sleep_ms(500)
+        ErrGantry.put(1)
+        Lights_Sound_Action()
+        zero_flags()
+        utime.sleep_ms(500)
+        ErrRailActR.put(1)
+        Lights_Sound_Action()
+        zero_flags()
+        utime.sleep_ms(500)
+        ErrBeamAct.put(1)
+        Lights_Sound_Action()
+        zero_flags()
+        utime.sleep_ms(500)
+        ErrProbe.put(1)
+        Lights_Sound_Action()
+        zero_flags()
+        utime.sleep_ms(500)
+        Lights_Sound_Action()
+        Lights_Sound_Off()
+def test3():
+    Lights_Sound_Off()
+    YellowLED.high()
+    Probe.Home()
+    BeamActuator.Home()
+    Gantry.Home()
+    Lights_Sound_Off()
+    GreenLED.high()
+    while True:
+        if Mode() == 3:
+            print('test1 selected')
+            test1()
+        elif Mode() == 2:
+            print('sleep mode selected')
+            Sleep_Mode(600)
+        elif Mode() == 1:
+            print('test2 selected')
+            test2()
+            
 """
 # Turn on only the yellow LED
 Lights_Sound_Off()
