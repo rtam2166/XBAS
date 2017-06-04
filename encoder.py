@@ -39,12 +39,17 @@ class Quad_Encoder:
         self.ch2 = self.timer.channel(2,pyb.Timer.ENC_AB,pin=self.pin2)
                 
     def read(self):
-        """Returns the current postion of the encoder
+        """Updates and returns the current postion of the encoder
+        Updates by taking the difference in counts since the last read
+        and adding them to self.position. Thus, this funtion has to be
+        run often enough that the encoder doesn't roll over more than
+        twice
         """
         self.previous = self.current
         self.current = self.timer.counter()
         self.delta = self.current - self.previous
         
+        # if statements to account for encoder roll over
         if self.delta < -10000:
             self.delta += 2**14
         elif self.delta > 10000:
@@ -54,7 +59,7 @@ class Quad_Encoder:
         return(self.position)
         
     def zero(self):
-        """Sets the encoder postion to zero
+        """Sets the encoder postion and other values to zero
         """
         self.position = 0
         self.current = 0
