@@ -10,8 +10,9 @@ def Song():
     integer. With four switches available, the range of corresponding integer
     inputs should be 0 to 15 (1-16 if you add 1 to the final number)
     
-    Ammendment: due to issues, this function has been basically deleted pending
-    future projects which fix the piano switchboard
+    Ammendment: due to issues with the piano switch board, this function
+    was basically cut out. If the user still wishes to use the piano switch
+    board, just delete XBeam.put(500) and uncomment the rest of the function
     '''
     XBeam.put(500)
     
