@@ -49,7 +49,7 @@ def Probe(Limit = False, UpperLimit = 0,LowerLimit = 0):
         #   amount.
         CurrentRead = ProbeEncoder.read()
         delta = CurrentRead-RefRead
-        # A fuck ton of debuggin statements. ctr + 1 to comment or uncomment
+        # many debuggin statements. ctr + 1 to comment or uncomment
         #   sections of code FYI
 #        print("        Current reading =   "+str(CurrentRead))
 #        print("        Previous reading =  "+str(RefRead))
