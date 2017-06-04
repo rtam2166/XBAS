@@ -238,18 +238,6 @@ def ErrorHandler():
     # Now Home the system
     Home("All")
         
-#def callback(line):
-#    '''This is a function which runs during interrupts. This should occur when
-#    the emergecny stop button is pressed down. It waits until the emergency
-#    stop has been disengaged and initiates a soft restart'''
-#    print("Emergency Stop pressed...")
-#    while True:
-#        if Stop_Pin.value() == 0:
-#            print("... and released")
-#            break
-#    import pyb
-#    pyb.hard_reset()
-
 def Home(*arg):
     '''Function Homes parts as indicated by the *arg which is a tuble of
     strings of whatever the user inputs. For reference, google Python optional
