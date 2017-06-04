@@ -1205,7 +1205,7 @@ def test3():
         elif Mode() == 1:
             print('test2 selected')
             test2()
-            
+test3()           
 """
 # Turn on only the yellow LED
 Lights_Sound_Off()
