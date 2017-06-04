@@ -102,14 +102,14 @@ def FileCheck():
         while True:
             start = utime.ticks_ms()
             if switch == 0 and go == 0:
-                BuzzerChannel.pulse_width_percent(100)
+                Buzzer('on')
             elif switch == 1 and go == 0:
-                BuzzerChannel.pulse_width_percent(0)
+                Buzzer('off')
             else:
-                BuzzerChannel.pulse_width_percent(0)
+                Buzzer('off')
             if Go() == 1 and go == 0:
                 go = 1
-                BuzzerChannel.pulse_width_percent(0)
+                Buzzer('off')
                 print("Go hit first time, sleep for 0.25 seconds.")
                 utime.sleep_ms(250)
                 print("Buzzer Off, please press the go button once more"+\
