@@ -18,9 +18,10 @@ def Move(Destination, probe = False):
     @param probe is True or False, defaulting to False if not called. If True,
             the function will call the probe function to do one measurement
             at the end of the move. If False, it will not do that measurement.
-    @return Returns one of two things. If the probe == True, the system will
+    @return Returns one of three things. If the probe == True, the system will
             retrn the value read by the probe at the end. If not, then the
-            function will return "Done".'''
+            function will return "Done". In both cases, if an error occured,
+            function will return "Error Occured".'''
     
     TickPerDistance = 111000/51.19 # ticks per mm determined experimentally
     Offset = 3       # Destance from home position of beam actuator to bottom
@@ -28,7 +29,6 @@ def Move(Destination, probe = False):
     Limit = 10       # Maximum travel of the beam actuator before something
                         # collides in mm. This is without the offset
     #ISSUE See above 2 variables
-    import Probe
     
     print("Moving Beam Actuator to position x: "+str(Destination))
     print("    Probe at the end of the move? "+str(probe))
@@ -71,14 +71,14 @@ def Move(Destination, probe = False):
             Board1.GetStatus(1,verbose = 0)
             break
         
-#        elif Board1.isStalled(1) == True:
-#            # if stall, stop beam actuator, throw error and return
-#            print("    Error Occured moving the Beam Actuator to position. "+\
-#                 "Beam Actuator stalled out")
-#            ErrBeamAct.put(1)
-#            Board1.HardHiZ(1)
-#            Board1.GetStatus(1,verbose = 0)
-#            return("Error Occured")
+        elif Board1.isStalled(1) == True:
+            # if stall, stop beam actuator, throw error and return
+            print("    Error Occured moving the Beam Actuator to position. "+\
+                 "Beam Actuator stalled out")
+            ErrBeamAct.put(1)
+            Board1.HardHiZ(1)
+            Board1.GetStatus(1,verbose = 0)
+            return("Error Occured")
     
     # If done moving beam actuator and probe option is true, take measurement
     if probe == True:
@@ -109,6 +109,8 @@ def Home():
         outputs and "Error Occured" if there is an error.
         '''
     if Board1.isHome(1)==True:
+        # if at switch, exit.
+        # Note, need to add while loop to release switch
         print('        Beam Actuator already homed')
         return
         
@@ -126,15 +128,15 @@ def Home():
             Board1.HardHiZ(1)
             Board1.GetStatus(1,verbose = 0)
             break
-#        elif Board1.isStalled(1) == True:
-#            print("        Board stalled: "+str(Board1.isStalled(1)))
-##                motor stalled, return an error and set flag
-#            Board1.HardHiZ(1)
-#            Board1.GetStatus(1,verbose = 0)
-#            print("        Beam Actuator Stalled during Home command")
-#            print("        ERROR ERROR ERROR, return error")
-#            ErrBeamAct.put(1)
-#            return("Error Occured")
+        elif Board1.isStalled(1) == True:
+            print("        Board stalled: "+str(Board1.isStalled(1)))
+#                motor stalled, return an error and set flag
+            Board1.HardHiZ(1)
+            Board1.GetStatus(1,verbose = 0)
+            print("        Beam Actuator Stalled during Home command")
+            print("        ERROR ERROR ERROR, return error")
+            ErrBeamAct.put(1)
+            return("Error Occured")
 
     # Release switch for beam actuator
     print("        releasing switch for Beam Actuator")
@@ -153,14 +155,14 @@ def Home():
                 break
             else:
                 Board1.ReleaseSW(1,1)
-#        elif Board1.isStalled(1) == True:
-#            # motor stalled, return an error and set flag
-#            Board1.HardHiZ(1)
-#            Board1.GetStatus(1,verbose = 0)
-#            print("        Beam Actuator Stalled during Home command")
-#            print("        ERROR ERROR ERROR, return error")
-#            ErrBeamAct.put(1)
-#            return("Error Occured")
+        elif Board1.isStalled(1) == True:
+            # motor stalled, return an error and set flag
+            Board1.HardHiZ(1)
+            Board1.GetStatus(1,verbose = 0)
+            print("        Beam Actuator Stalled during Home command")
+            print("        ERROR ERROR ERROR, return error")
+            ErrBeamAct.put(1)
+            return("Error Occured")
         if Board1.isHome(1) == False:
             break
 
@@ -174,5 +176,7 @@ def Status():
         None'''
     Board1.GetStatus(1,verbose = 1)
 
+# importing modules and objects needed
+import Probe
 from setup import ErrBeamAct, Board1
 import utime
