@@ -29,7 +29,7 @@ def checkSide(Side):
         Side == 2:
         return(2)
         
-def Move(Side,stall=90):
+def Move(Side,Destination,stall=90):
     '''Moves the selected rail actuator to the given destination
     Function Inputs:
         Side indicates which rail actuator is being operated. The value is put
@@ -39,56 +39,64 @@ def Move(Side,stall=90):
             which we found to be weak enough not to hurt a person, but enough
             to move without stall. Set to higher stalls for specific commands
     Fucntion Outputs:
-        None'''
-#    switch = 0
-    print('    setting stall, wait a lot')
+        If there was stall, returns "Stalled"
+        If move was completed, returns "Completed move command"
+        
+    Note: This function was written very last minute and is untested
+        '''
+    
+    # setting stall threshold
     Board2._setStallThreshold(stall)
+    
+    # determine side
     motor = checkSide(Side)
+    
+    # get status on motor being run (cleares errors)
     Board2.GetStatus(motor)
+    
+    # run motor. This gets the motor going for the GoUntil
+    #   command later since we noticed the GoUntil command
+    #   sometimes doesn't work until after a Run command.
+    #   this was a last minute addition to help cover the 
+    #   aforementioned bug and is not in the flow chart
     Board2.Run(motor,200)
+    
+    # start timer
     start = utime.ticks_ms()
+    
+    # while loop that waits for stall or a time out
     while True:
         current = utime.ticks_ms()
         if Board2.isStalled(motor):
             print('stalled')
             Board2.HardHiZ(motor)
-        if current-start > 3000:
+        if current-start > 1000:
             utime.sleep(5)
             Board2.HardHiZ(motor)
             Home(motor)
             break
-#    # sleep to let the motors get going
-#    utime.sleep_ms(2000)
-#    # check rail actuators for completion or stall
-#    while True:
-#        if Board2.isBusy(motor) == False and switch != 1:
-#            print('    moving motor pt 1')
-#            Board2.GetStatus(motor,verbose = 0)
-#            Board2.Run(motor,100)
-#            utime.sleep_ms(1000)
-#            print('    moving motor pt 2')
-#            Board2.GoTo(motor,Destination)
-#        if Board2.isBusy(motor) == True and switch != 1:
-#            utime.sleep_ms(500)
-#            if Board2.isBusy(motor) == True and switch != 1:
-#                switch = 1
-#                print('    motor moved, switch is '+str(switch))
-#        if Board2.isBusy(motor) == False and switch == 1:
-#            # gantry at switch, continue.
-#            print("    Board isn't busy anymore")
-#            Board2.GetStatus(motor)
-#            Board2.HardHiZ(motor)
-#            Board2._setStallThreshold(127)
-#            utime.sleep(1)
-#            return("Completed move command")
-#        elif Board2.isStalled(motor) == True:
-#            print("    Board stalled: True")
-##                motor stalled, return an error and set flag
-#            Board2.HardHiZ(motor)
-#            Board2._setStallThreshold(127)
-#            utime.sleep(1)
-#            print("    rail actuator Stalled during move command")
-#            return("Stall occured")
+    
+    # move motor to destination
+    Board2.GoTo(motor,Destination)
+    
+    # check rail actuators for completion or stall
+    while True:
+        if Board2.isBusy(motor) == False and switch == 1:
+            # gantry at switch, continue.
+            print("    Board isn't busy anymore")
+            Board2.GetStatus(motor)
+            Board2.HardHiZ(motor)
+            Board2._setStallThreshold(127)
+            utime.sleep(1)
+            return("Completed move command")
+        elif Board2.isStalled(motor) == True:
+            print("    Board stalled: True")
+#                motor stalled, return an error and set flag
+            Board2.HardHiZ(motor)
+            Board2._setStallThreshold(127)
+            utime.sleep(1)
+            print("    rail actuator Stalled during move command")
+            return("Stall occured")
         
         
 def Home(Side):
@@ -96,7 +104,10 @@ def Home(Side):
     Function Inputs:
         Side indicates which actuator (if not both) is being homed
     Fucntion Outputs:
-        None'''
+        returns "Completed move command" when done
+        
+    Note: this function was written last minute and is untested
+    '''
     print('homing rail actuator')
     motor = checkSide(Side)
     if motor == 1 or motor == 2:
