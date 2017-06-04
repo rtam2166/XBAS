@@ -663,6 +663,8 @@ def Leveling_Mode():
             #   the X-Beam actuator levels the beam
             x = x2/x1
             
+            # NOTE: If time, fix this, it seems wrong
+            
             # Actuate X-Beam levveling actuator and measure
 #            print("Actuate X-Beam actuator")
             Output = BeamActuator.Move((NearLevel - FarLevel)/x,
@@ -1068,6 +1070,9 @@ import Import
 zero_flags()
     
 def test1():
+  '''last minute function written for expo. Homes system, waits for go or 
+  different mode selected. Runs systen to pre defined spots, tests gantry,
+  probe, and beam actuator. Can disregard this function'''
     YellowLED.high()
 #    Probe.Home()
 #    BeamActuator.Home()
@@ -1128,6 +1133,10 @@ def test1():
         Gantry.Home()
         Lights_Sound_Action()
 def test2():
+  '''last minute function written for expo. waits for go or different
+  mode selected. runs through all the error states except for 
+  missing file error from the FileCheck function in setup. Useful for
+  debugging, might keep'''
     while True:
         YellowLED.high()
         Lights_Sound_Off()
@@ -1176,6 +1185,9 @@ def test2():
         Lights_Sound_Action()
         Lights_Sound_Off()
 def test3():
+  '''demonstrative code for senior project expo, meant to mirror the
+  the original main.py which is commented out below. setup system,
+  check mode, run function selected by mode.'''
     Lights_Sound_Off()
     YellowLED.high()
     Probe.Home()
