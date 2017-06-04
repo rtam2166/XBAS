@@ -145,7 +145,7 @@ def Home():
     start = utime.ticks_ms()
     while True:
         if Board1.isBusy(1) == False:
-            # Both rail actuators are homed, continue.
+            # beam actuator homed, continue.
             print("        Beam Actuator completed ReleaseSW Command")
             Board1.HardHiZ(1)
             status = Board1.GetStatus(1,verbose = 0)
