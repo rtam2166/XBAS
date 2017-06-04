@@ -87,6 +87,10 @@ def FileCheck():
     # Finished writing to Error Report, close the text file
     f.close()
     
+    # Copied from main.Lights_Sound_Action(). This section of error handling
+    #   is if task_share.py is missing in which case main.Lights_Sound_Action()
+    #   and main.ErrorHandler() cannot work due to undefined error flag buffers.
+    #   Thus FileCheck has to take care of itself
     if Switch != 0:
         # If there was an error, set flag
         print("File Check Done, error occured, please press (deliberatly) "+\
