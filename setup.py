@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon May 29 19:32:20 2017
-
-@author: drago
+File: setup.py
+@author: Robert Tam
 """
 def zero_flags():
     '''Function sets all error flag buffers to false aka 0 or its equivalent.
