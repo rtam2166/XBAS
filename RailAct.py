@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun  1 13:28:59 2017
-
-@author: drago
+File: RailAct.py
+@author: Robert Tam
 """
 def checkSide(Side):
     '''Function determines the rail actuator being called
