@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-File: BeamActuator.py
+File: Gantry.py
 @author: Robert Tam
 """
 
