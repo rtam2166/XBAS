@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon May 29 17:10:41 2017
-
-@author: drago
+File: BeamActuator.py
+@author: Robert Tam
 """
 
 def Move(Destination, probe = False):
