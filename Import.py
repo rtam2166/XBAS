@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 30 17:49:56 2017
-
-@author: drago
+File: BeamActuator.py
+@author: Robert Tam
 """
 def Song():
     '''This function checks the piano board's last four switches (the pins
